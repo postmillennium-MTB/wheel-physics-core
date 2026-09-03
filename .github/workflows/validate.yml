@@ -1,0 +1,45 @@
+name: Validate engine.js against the reference Python library
+
+# Runs on every push and PR to main, and can be triggered by hand.
+# This is the check that matters: it does not run "when someone remembers
+# to" -- it runs on every change, automatically, and fails the build if
+# js/engine.js and the vendored Python (python/bikewheelcalc/) ever produce
+# different answers for the same hub. That is the whole point of this repo.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch: {}
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Python dependencies (numpy, scipy -- bikewheelcalc's only deps)
+        run: pip install numpy scipy
+
+      - name: Compute reference values from the vendored Python library
+        working-directory: validation
+        run: python3 reference.py
+
+      - name: Run engine.js against the same inputs and diff
+        working-directory: validation
+        run: node run.mjs
+
+      - name: Upload validation results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-results
+          path: validation/validation_baseline_*.csv

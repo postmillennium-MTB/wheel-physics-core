@@ -1,0 +1,14 @@
+{
+  "name": "@postmillennium-mtb/wheel-physics-core",
+  "version": "1.0.0",
+  "description": "Shared, validated wheel-strength physics engine (Ford Mode Matrix method) for MTB-wheel-lab and wheel-comparison-widget2.",
+  "main": "js/engine.js",
+  "license": "MIT",
+  "scripts": {
+    "validate": "cd validation && python3 reference.py && node run.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/postmillennium-MTB/wheel-physics-core"
+  }
+}
