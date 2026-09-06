@@ -1,0 +1,18 @@
+[submodule "third-party/dashdotrobot/bike-wheel-api"]
+	path = third-party/dashdotrobot/bike-wheel-api
+	url = https://github.com/dashdotrobot/bike-wheel-api.git
+[submodule "third-party/dashdotrobot/wheel-app"]
+	path = third-party/dashdotrobot/wheel-app
+	url = https://github.com/dashdotrobot/wheel-app.git
+[submodule "third-party/dashdotrobot/wheel-app-js"]
+	path = third-party/dashdotrobot/wheel-app-js
+	url = https://github.com/dashdotrobot/wheel-app-js.git
+[submodule "third-party/dashdotrobot/rim-testing"]
+	path = third-party/dashdotrobot/rim-testing
+	url = https://github.com/dashdotrobot/rim-testing.git
+[submodule "third-party/dashdotrobot/bmd2016"]
+	path = third-party/dashdotrobot/bmd2016
+	url = https://github.com/dashdotrobot/bmd2016.git
+[submodule "third-party/dashdotrobot/phd-thesis"]
+	path = third-party/dashdotrobot/phd-thesis
+	url = https://github.com/dashdotrobot/phd-thesis.git
