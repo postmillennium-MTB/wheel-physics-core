@@ -41,6 +41,12 @@ it:
 Any error in the JavaScript port is this repo's, not his. If you spot one,
 it reflects on this port, not on the thesis or the original library.
 
+His other wheel-related repos (the Bokeh app, the acoustic rim-testing
+notebooks, the PhD thesis's full code/data, etc.) are archived as git
+submodules under `third-party/dashdotrobot/`, and his published papers
+live in `papers/` — see [`CREDITS.md`](./CREDITS.md) for the full list,
+each one's license status, and how to add more.
+
 ---
 
 ## What's in this repo
