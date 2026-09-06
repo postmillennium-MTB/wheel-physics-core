@@ -69,3 +69,12 @@ knowledge. See `papers/README.md` for the full list and how to add more.
 Wheel-mechanics papers by authors other than Ford, kept in a separate
 folder specifically so `papers/` stays unambiguously his. See
 `literature/README.md` for the full list.
+
+`literature/bike-tech-archive/` is a complete 24-issue run (1982 pilot
+issue through Winter 1986) of *Bike Tech*, Rodale Press's technical
+newsletter — scanned and hosted by
+[bulgier.net](http://bulgier.net/pics/bike/Articles/Bike_Tech/), mirrored
+here for durability. Includes Price & Akers (1985), "Stiffness
+Characteristics of Bicycle Wheels," a paper widely cited elsewhere in this
+repo's literature but previously unavailable as a PDF anywhere online.
+See `bike-tech-archive/README.md` for the full issue index.

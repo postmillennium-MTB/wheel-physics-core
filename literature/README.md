@@ -11,6 +11,7 @@ would blur that at a glance. See `papers/README.md` for his papers and
 | [`brandt-1981-the-bicycle-wheel.pdf`](./brandt-1981-the-bicycle-wheel.pdf) | Brandt, J. (1981). *The Bicycle Wheel.* Avocet, Inc. Book, not a peer-reviewed paper — see the copyright note below. |
 | [`gavin-1996-spoke-patterns-and-spoke-fatigue.pdf`](./gavin-1996-spoke-patterns-and-spoke-fatigue.pdf) | Gavin, H.P. (1996). "Bicycle-Wheel Spoke Patterns and Spoke Fatigue." *ASCE Journal of Engineering Mechanics*, 122(8), pp. 736-742. |
 | [`minguez-vogwell-2008-analytical-model-radial-stiffness.pdf`](./minguez-vogwell-2008-analytical-model-radial-stiffness.pdf) | Mínguez, J.M., Vogwell, J. (2008). "An analytical model to study the radial stiffness and spoke load distribution in a modern racing bicycle wheel." *Proceedings of the Institution of Mechanical Engineers, Part C: Journal of Mechanical Engineering Science*, 222(4), pp. 563-576. [DOI: 10.1243/09544062JMES802](https://doi.org/10.1243/09544062jmes802). Self-archived via University of Bath's Opus repository. |
+| [`bike-tech-archive/bike-tech-v4n3-jun1985.pdf`](./bike-tech-archive/bike-tech-v4n3-jun1985.pdf) | Price, D., Akers, A. (1985). "Stiffness Characteristics of Bicycle Wheels." *Bike Tech*, 4(3), pp. 1-7, Rodale Press, Emmaus, PA. Widely cited (e.g. by Gavin 1996 above) but had no PDF anywhere online until this archive — see `bike-tech-archive/README.md` for the full periodical run it came from. |
 
 ## Copyright note on the Brandt book
 
@@ -59,6 +60,22 @@ worth having as a cross-check on the radial-stiffness side rather than
 taking Ford's approach as the only treatment in the literature. Not yet
 compared line-by-line against `js/engine.js`'s radial-stiffness output —
 if that comparison gets done, record the result here.
+
+## What's in the Price & Akers paper, briefly
+
+Built five otherwise-identical rear wheels (36h Normandy hi-flange hubs,
+DT 15-gauge/1.8mm straight-gauge spokes, AVA aluminum 700c tubular rims,
+~420g, all standardized to 136 lb/605N spoke tension) differing only in
+lacing pattern — radial, 1-cross, 2-cross, 3-cross, 4-cross — and measured
+torsional and lateral/radial stiffness on an MTS electro-hydraulic test
+machine at Iowa State University. Per the authors: results "generally
+confirm some long-standing articles of faith of the wheelbuilding trade"
+but "raise certain questions about wheel stiffness that builders should
+know about." Also directly compares their measured values against the
+calculated predictions in two contemporary wheelbuilding books — worth
+reading for anyone using this repo's rim/spoke betas who wants a second,
+independently-measured (not modeled) stiffness dataset from a different
+lacing-pattern angle than Gavin (1996) above.
 
 ## Adding more
 
