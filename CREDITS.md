@@ -63,3 +63,9 @@ license.
 
 Self-archived author manuscripts, added at the user's request with Ford's
 knowledge. See `papers/README.md` for the full list and how to add more.
+
+## Literature (`literature/`)
+
+Wheel-mechanics papers by authors other than Ford, kept in a separate
+folder specifically so `papers/` stays unambiguously his. See
+`literature/README.md` for the full list.
