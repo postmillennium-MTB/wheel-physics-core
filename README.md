@@ -5,13 +5,13 @@ The shared, validated wheel-strength physics engine behind
 [wheel-comparison-widget2](https://github.com/postmillennium-MTB/wheel-comparison-widget2).
 
 **This repo exists so those two tools compute the same numbers from the
-same math, provably, on every change — not because someone remembered to
-check.** Before this repo existed, each tool carried its own hand-written
-JavaScript translation of the underlying method, and they had quietly
-drifted apart: for the same hub and the same inputs, one tool's lateral
-stiffness figure was reading roughly 90% higher than the other's, and
-neither tool's own repo had anything checking for that. See "Why this repo
-exists" below for the specifics.
+same math, provably, on every change.** Before this repo existed, each
+tool carried its own hand-written JavaScript translation of the underlying
+method, and they had quietly drifted apart: for the same hub and the same
+inputs, one tool's lateral stiffness figure was reading roughly 90% higher
+than the other's, and neither tool's own repo had anything checking for
+that. See "Validation" below for how this repo catches that automatically
+going forward.
 
 ---
 
@@ -44,8 +44,13 @@ it reflects on this port, not on the thesis or the original library.
 His other wheel-related repos (the Bokeh app, the acoustic rim-testing
 notebooks, the PhD thesis's full code/data, etc.) are archived as git
 submodules under `third-party/dashdotrobot/`, and his published papers
-live in `papers/` — see [`CREDITS.md`](./CREDITS.md) for the full list,
-each one's license status, and how to add more.
+live in `papers/`. They're here so wheel-strength-related tools built in
+this org have his actual apps, notebooks, and derivations on hand to run
+and test against natively — rather than everyone re-finding and re-cloning
+his repos individually whenever a question comes up about how a number in
+`engine.js` was originally derived or validated. See
+[`CREDITS.md`](./CREDITS.md) for the full list, each one's license status,
+and how to add more.
 
 ---
 
