@@ -5,9 +5,20 @@ credit belongs to him and his co-authors — see each entry below.
 
 | File | Citation |
 |---|---|
+| [`ford-2018-a-theoretical-analysis-of-the-bicycle-wheel.pdf`](./ford-2018-a-theoretical-analysis-of-the-bicycle-wheel.pdf) | Ford, M.T. (2018). *A Theoretical Analysis of the Bicycle Wheel.* PhD thesis, Northwestern University. The primary source — every other paper here is a conference/journal excerpt of a chapter of this. Full LaTeX source, chapter-by-chapter, is also in `third-party/dashdotrobot/phd-thesis`. |
 | [`ford-papadopoulos-balogun-2016-buckling-of-the-bicycle-wheel.pdf`](./ford-papadopoulos-balogun-2016-buckling-of-the-bicycle-wheel.pdf) | Ford, M., Papadopoulos, J.M., Balogun, O. (2016). "Buckling of the Bicycle Wheel." *Proceedings, Bicycle and Motorcycle Dynamics 2016 Symposium*, Milwaukee, WI. Companion paper/code to `third-party/dashdotrobot/bmd2016`. |
 | [`ford-balogun-2017-radial-strength-and-collapse.pdf`](./ford-balogun-2017-radial-strength-and-collapse.pdf) | Ford, M., Balogun, O. (2017). "Analytical Model for the Radial Strength and Collapse of the Bicycle Wheel." *6th International Cycling Safety Conference*, Davis, CA. CC BY 4.0. |
 | [`ford-peng-balogun-2018-acoustic-modal-testing.pdf`](./ford-peng-balogun-2018-acoustic-modal-testing.pdf) | Ford, M., Peng, P., Balogun, O. (2018). "Acoustic Modal Testing of Bicycle Rims." *Journal of Nondestructive Evaluation*, 37(2). [DOI: 10.1007/s10921-018-0471-7](https://doi.org/10.1007/s10921-018-0471-7) |
+
+## The thesis
+
+`ford-2018-a-theoretical-analysis-of-the-bicycle-wheel.pdf` is the
+dissertation the Mode Matrix method (this engine's basis, see the main
+README's "Whose math this is") and all three papers below come from. If a
+number or an assumption in `js/engine.js` needs tracing back to first
+principles rather than to a paper's condensed version of it, this is the
+document to check first — it's the only one with the full derivation
+chain, not just the publishable excerpt.
 
 ## What's in the buckling and radial-strength papers, briefly
 
