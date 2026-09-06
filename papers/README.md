@@ -5,7 +5,29 @@ credit belongs to him and his co-authors — see each entry below.
 
 | File | Citation |
 |---|---|
+| [`ford-papadopoulos-balogun-2016-buckling-of-the-bicycle-wheel.pdf`](./ford-papadopoulos-balogun-2016-buckling-of-the-bicycle-wheel.pdf) | Ford, M., Papadopoulos, J.M., Balogun, O. (2016). "Buckling of the Bicycle Wheel." *Proceedings, Bicycle and Motorcycle Dynamics 2016 Symposium*, Milwaukee, WI. Companion paper/code to `third-party/dashdotrobot/bmd2016`. |
+| [`ford-balogun-2017-radial-strength-and-collapse.pdf`](./ford-balogun-2017-radial-strength-and-collapse.pdf) | Ford, M., Balogun, O. (2017). "Analytical Model for the Radial Strength and Collapse of the Bicycle Wheel." *6th International Cycling Safety Conference*, Davis, CA. CC BY 4.0. |
 | [`ford-peng-balogun-2018-acoustic-modal-testing.pdf`](./ford-peng-balogun-2018-acoustic-modal-testing.pdf) | Ford, M., Peng, P., Balogun, O. (2018). "Acoustic Modal Testing of Bicycle Rims." *Journal of Nondestructive Evaluation*, 37(2). [DOI: 10.1007/s10921-018-0471-7](https://doi.org/10.1007/s10921-018-0471-7) |
+
+## What's in the buckling and radial-strength papers, briefly
+
+These two derive the theory that `wheel-physics-core`'s buckling-tension
+and strength calculations are built on:
+
+- **"Buckling of the Bicycle Wheel" (2016)** derives the formula for the
+  maximum spoke tension a wheel can withstand before the rim buckles
+  laterally ("tacos"): `T_cr = 2*R*K_t / (n_s*(n^2 - R/l_s))`, where `K_t`
+  is a combined bending/torsion/spoke-stiffness mode stiffness, `n_s` is
+  spoke count, and `n >= 2` is the buckling mode number — this is the
+  theoretical basis for `wheel-physics-core`'s critical buckling tension
+  output. Companion code lives in `third-party/dashdotrobot/bmd2016`.
+- **"Analytical Model for the Radial Strength and Collapse" (2017)**
+  analyzes the *other* failure mode — spokes going slack under radial
+  load, rather than the rim buckling — and combines both failure modes
+  into a single tension-independent wheel-strength expression. This is
+  the direct theoretical ancestor of `F_lat`/`F_rad` (first-spoke-slack
+  strength) as computed in `js/engine.js` and used throughout
+  `MTB-wheel-lab`'s regression analysis.
 
 ## What's in the acoustic-testing paper, briefly
 
