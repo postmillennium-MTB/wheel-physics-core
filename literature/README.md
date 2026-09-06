@@ -8,7 +8,29 @@ would blur that at a glance. See `papers/README.md` for his papers and
 
 | File | Citation |
 |---|---|
+| [`gavin-1996-spoke-patterns-and-spoke-fatigue.pdf`](./gavin-1996-spoke-patterns-and-spoke-fatigue.pdf) | Gavin, H.P. (1996). "Bicycle-Wheel Spoke Patterns and Spoke Fatigue." *ASCE Journal of Engineering Mechanics*, 122(8), pp. 736-742. |
 | [`minguez-vogwell-2008-analytical-model-radial-stiffness.pdf`](./minguez-vogwell-2008-analytical-model-radial-stiffness.pdf) | Mínguez, J.M., Vogwell, J. (2008). "An analytical model to study the radial stiffness and spoke load distribution in a modern racing bicycle wheel." *Proceedings of the Institution of Mechanical Engineers, Part C: Journal of Mechanical Engineering Science*, 222(4), pp. 563-576. [DOI: 10.1243/09544062JMES802](https://doi.org/10.1243/09544062jmes802). Self-archived via University of Bath's Opus repository. |
+
+## Books (no PDF hosted)
+
+| Citation | Why it's here without a file |
+|---|---|
+| Brandt, J. (1981). *The Bicycle Wheel.* Avocet, Inc. | The foundational practical/engineering text modern wheel theory builds on — Ford's thesis and papers cite it, and it's the common reference wheelbuilders and researchers both work from. Commercially published and still in print, so no PDF is hosted here; cite it by name when its framing (spoke tension, "stress-relieving," radial elasticity) is the actual source of an assumption. |
+
+## What's in the Gavin paper, briefly
+
+Strain-gauge instrumented three rear wheels with different spoke lacing
+patterns (radial, cross patterns) and measured spoke strain under both
+lab radial loads and actual road riding. Models the wheel as a circular
+beam on a prestressed elastic foundation (the interlaced spokes smeared
+into a continuous radial stiffness) — a precursor to the "smeared spoke"
+treatment `wheel-physics-core` also uses (see the main README's "Model
+settings": Smith-Pippard smeared spokes). Headline finding: **spoke
+lacing pattern has little effect on spoke strain or fatigue life** under
+radial load — the pattern matters much less than commonly assumed for
+this failure mode. Cited as prior work ("Gavin [9]") in Ford's 2018
+acoustic-testing paper regarding the coupling between a rim's out-of-plane
+bending and torsional stiffness.
 
 ## What's in the Mínguez & Vogwell paper, briefly
 
