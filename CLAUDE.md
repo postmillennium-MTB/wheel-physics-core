@@ -12,7 +12,7 @@ is, what's vendored vs. ported, and how the two consuming tools should use
 `js/engine.js`. Read `CREDITS.md` for the full attribution picture.
 
 ```
-python/bikewheelcalc/     Ford's bike-wheel-calc, vendored verbatim, MIT
+vendor/bike-wheel-calc/    Ford's bike-wheel-calc, vendored verbatim, MIT
 js/engine.js              THE canonical JS engine — edit here, not in a copy
 validation/                Checks engine.js against the vendored Python
 papers/                    Ford's own published papers (his work, cited)
@@ -83,7 +83,7 @@ Six of Ford's other repos are archived there as git submodules (not
 copies) for native reference — running his actual apps/notebooks/tests
 rather than everyone re-cloning them separately. `bike-wheel-calc` is
 **not** among them; it's already vendored directly in
-`python/bikewheelcalc/`, so don't re-add it as a submodule (redundant
+`vendor/bike-wheel-calc/`, so don't re-add it as a submodule (redundant
 second copy of the same repo).
 
 Four of the six submodules declare no license at all (see `CREDITS.md`'s
@@ -95,7 +95,7 @@ implies a license.
 ## Validation discipline
 
 `js/engine.js` must keep agreeing with the vendored Python
-(`python/bikewheelcalc/`) to floating-point precision — see `README.md`'s
+(`vendor/bike-wheel-calc/bikewheelcalc/`) to floating-point precision — see `README.md`'s
 "Validation" section and `.github/workflows/validate.yml`. Any change to
 `engine.js` should be re-validated (`cd validation && python3 reference.py
 && node run.mjs`) before committing, not just eyeballed.

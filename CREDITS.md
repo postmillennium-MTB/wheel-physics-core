@@ -20,7 +20,7 @@ sibling `MTB-wheel-lab` and `wheel-comparison-widget2` repos.
 
 ## Vendored source (already in this repo, unchanged)
 
-- `python/bikewheelcalc/` + `python/LICENSE` — Ford's `bike-wheel-calc`,
+- `vendor/bike-wheel-calc/bikewheelcalc/` + `vendor/bike-wheel-calc/LICENSE` — Ford's `bike-wheel-calc`,
   MIT-licensed, copied verbatim at commit
   [`6fc380c`](https://github.com/dashdotrobot/bike-wheel-calc/commit/6fc380c3576307d825d24fdffbbcbc192a720300).
   See the main README for how it's used (validation ground truth for
@@ -46,7 +46,7 @@ after cloning to pull them in.
 | `phd-thesis` | Full PhD dissertation + all supporting code, data, and figures | **none declared** |
 
 `bike-wheel-calc` itself is **not** re-added as a submodule here — it's
-already vendored directly into `python/bikewheelcalc/` (see above), so a
+already vendored directly into `vendor/bike-wheel-calc/` (see above), so a
 submodule pointing at the same repo would just be a redundant second copy.
 
 **License note:** four of these six repos declare no license at all,

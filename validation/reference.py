@@ -2,8 +2,8 @@
 """
 Computes the reference (ground-truth) values for every hub in
 hub_catalogue.json, using the unmodified, vendored dashdotrobot library
-(python/bikewheelcalc/) with the exact settings js/engine.js documents
-itself as matching:
+(vendor/bike-wheel-calc/bikewheelcalc/) with the exact settings
+js/engine.js documents itself as matching:
 
     ratio  <- BicycleWheel.apply_tension(T_right=T_DS)
     K_lat  <- theory.calc_lat_stiff(N=24, smeared_spokes=True, tension=True,
@@ -23,7 +23,7 @@ import json
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "python"))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "vendor" / "bike-wheel-calc"))
 from bikewheelcalc import BicycleWheel, Rim, Hub
 from bikewheelcalc.theory import calc_lat_stiff, calc_rad_stiff, calc_buckling_tension
 

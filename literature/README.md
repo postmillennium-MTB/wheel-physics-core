@@ -8,14 +8,32 @@ would blur that at a glance. See `papers/README.md` for his papers and
 
 | File | Citation |
 |---|---|
+| [`brandt-1981-the-bicycle-wheel.pdf`](./brandt-1981-the-bicycle-wheel.pdf) | Brandt, J. (1981). *The Bicycle Wheel.* Avocet, Inc. Book, not a peer-reviewed paper — see the copyright note below. |
 | [`gavin-1996-spoke-patterns-and-spoke-fatigue.pdf`](./gavin-1996-spoke-patterns-and-spoke-fatigue.pdf) | Gavin, H.P. (1996). "Bicycle-Wheel Spoke Patterns and Spoke Fatigue." *ASCE Journal of Engineering Mechanics*, 122(8), pp. 736-742. |
 | [`minguez-vogwell-2008-analytical-model-radial-stiffness.pdf`](./minguez-vogwell-2008-analytical-model-radial-stiffness.pdf) | Mínguez, J.M., Vogwell, J. (2008). "An analytical model to study the radial stiffness and spoke load distribution in a modern racing bicycle wheel." *Proceedings of the Institution of Mechanical Engineers, Part C: Journal of Mechanical Engineering Science*, 222(4), pp. 563-576. [DOI: 10.1243/09544062JMES802](https://doi.org/10.1243/09544062jmes802). Self-archived via University of Bath's Opus repository. |
 
-## Books (no PDF hosted)
+## Copyright note on the Brandt book
 
-| Citation | Why it's here without a file |
-|---|---|
-| Brandt, J. (1981). *The Bicycle Wheel.* Avocet, Inc. | The foundational practical/engineering text modern wheel theory builds on — Ford's thesis and papers cite it, and it's the common reference wheelbuilders and researchers both work from. Commercially published and still in print, so no PDF is hosted here; cite it by name when its framing (spoke tension, "stress-relieving," radial elasticity) is the actual source of an assumption. |
+Unlike the self-archived academic PDFs above (author manuscripts the
+authors themselves distribute freely), *The Bicycle Wheel* is a
+commercially published, still-in-print book with no author-granted
+self-archiving permission. It's kept here because it's the foundational
+practical/engineering text modern wheel theory builds on — Ford's own
+thesis and papers cite it, and it's the common reference wheelbuilders and
+researchers both work from — but its copyright status is materially
+different from everything else in this repo. Treat it as internal
+reference only, not something to link publicly or redistribute outside
+this org.
+
+## What's in the Brandt book, briefly
+
+The practitioner's counterpart to the academic papers here: tension
+symmetry, "stress-relieving" a new build, radial elasticity from a
+wheelbuilder's rather than a theorist's perspective, spoke pattern and
+lacing practice. Where a paper's formula needs grounding in *why* a
+wheelbuilder does something a certain way (rather than just what the math
+says), this is the reference — Ford's own thesis treats it as the
+starting practical framing his theoretical work formalizes.
 
 ## What's in the Gavin paper, briefly
 
