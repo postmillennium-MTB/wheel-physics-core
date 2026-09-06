@@ -12,15 +12,27 @@ is, what's vendored vs. ported, and how the two consuming tools should use
 `js/engine.js`. Read `CREDITS.md` for the full attribution picture.
 
 ```
-vendor/bike-wheel-calc/    Ford's bike-wheel-calc, vendored verbatim, MIT
+third-party/dashdotrobot/bike-wheel-calc/  Ford's bike-wheel-calc, MIT -- a submodule
+                                            like the rest below, but also the one
+                                            actual build/validation dependency
 js/engine.js              THE canonical JS engine — edit here, not in a copy
-validation/                Checks engine.js against the vendored Python
+validation/                Checks engine.js against bike-wheel-calc
 papers/                    Ford's own published papers (his work, cited)
 literature/                Wheel-mechanics papers by other authors
 literature/bike-tech-archive/  Full 24-issue run of Bike Tech (1982-1986)
-third-party/dashdotrobot/  Ford's other repos, archived as git submodules
+third-party/dashdotrobot/  All of Ford's other repos, archived as git submodules
 CREDITS.md                 Full attribution + per-submodule license status
 ```
+
+Every one of Ford's repos lives under `third-party/dashdotrobot/`, with no
+exception — including `bike-wheel-calc`. It used to be split out into its
+own top-level `vendor/` folder on the reasoning that it's an actual build
+dependency and the rest are just archived reference; that turned out to
+be a confusing inconsistency in practice (the one folder named after his
+GitHub handle didn't contain his most-used repo), so it was folded back
+in. The role distinction still matters and is documented (see
+`CREDITS.md`'s submodule table), just not expressed as a different
+top-level location anymore.
 
 *Bike Tech* ran only four years (1982-1986, 24 issues) before folding, but
 `literature/bike-tech-archive/README.md`'s index gives some sense of the
@@ -108,23 +120,25 @@ archive rather than duplicating the PDF.
 
 ## Working with `third-party/dashdotrobot/`
 
-Six of Ford's other repos are archived there as git submodules (not
-copies) for native reference — running his actual apps/notebooks/tests
-rather than everyone re-cloning them separately. `bike-wheel-calc` is
-**not** among them; it's already vendored directly in
-`vendor/bike-wheel-calc/`, so don't re-add it as a submodule (redundant
-second copy of the same repo).
+All seven of Ford's other repos are archived there as git submodules (not
+copies), `bike-wheel-calc` included — for native reference (running his
+actual apps/notebooks/tests rather than everyone re-cloning them
+separately) in six cases, and as an actual build/validation dependency in
+`bike-wheel-calc`'s. Don't add a second copy of `bike-wheel-calc`
+elsewhere in the repo (e.g. a `vendor/` folder) — the submodule here is
+the only copy that should exist.
 
-Four of the six submodules declare no license at all (see `CREDITS.md`'s
-table). They're fine to read, run locally, and cite for reference — get
-Ford's explicit sign-off before *using* any of their code (building,
-importing, shipping) rather than assuming the archival relationship
-implies a license.
+Four of the seven submodules declare no license at all (see `CREDITS.md`'s
+table; `bike-wheel-calc` itself is MIT). They're fine to read, run
+locally, and cite for reference — get Ford's explicit sign-off before
+*using* any of the unlicensed ones' code (building, importing, shipping)
+rather than assuming the archival relationship implies a license.
 
 ## Validation discipline
 
-`js/engine.js` must keep agreeing with the vendored Python
-(`vendor/bike-wheel-calc/bikewheelcalc/`) to floating-point precision — see `README.md`'s
+`js/engine.js` must keep agreeing with `bike-wheel-calc`
+(`third-party/dashdotrobot/bike-wheel-calc/bikewheelcalc/`) to
+floating-point precision — see `README.md`'s
 "Validation" section and `.github/workflows/validate.yml`. Any change to
 `engine.js` should be re-validated (`cd validation && python3 reference.py
 && node run.mjs`) before committing, not just eyeballed.

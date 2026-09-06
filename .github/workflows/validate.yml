@@ -3,7 +3,8 @@ name: Validate engine.js against the reference Python library
 # Runs on every push and PR to main, and can be triggered by hand.
 # This is the check that matters: it does not run "when someone remembers
 # to" -- it runs on every change, automatically, and fails the build if
-# js/engine.js and the vendored Python (vendor/bike-wheel-calc/) ever produce
+# js/engine.js and Ford's own bike-wheel-calc (checked out via the
+# third-party/dashdotrobot/bike-wheel-calc submodule) ever produce
 # different answers for the same hub. That is the whole point of this repo.
 on:
   push:
@@ -17,6 +18,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # The vendored reference library lives in a submodule
+          # (third-party/dashdotrobot/bike-wheel-calc) -- without this,
+          # actions/checkout leaves it as an empty directory and
+          # reference.py's import fails.
+          submodules: true
 
       - uses: actions/setup-python@v5
         with:
@@ -29,7 +36,7 @@ jobs:
       - name: Install Python dependencies (numpy, scipy -- bikewheelcalc's only deps)
         run: pip install numpy scipy
 
-      - name: Compute reference values from the vendored Python library
+      - name: Compute reference values from bike-wheel-calc
         working-directory: validation
         run: python3 reference.py
 

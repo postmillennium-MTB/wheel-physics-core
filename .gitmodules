@@ -16,3 +16,6 @@
 [submodule "third-party/dashdotrobot/phd-thesis"]
 	path = third-party/dashdotrobot/phd-thesis
 	url = https://github.com/dashdotrobot/phd-thesis.git
+[submodule "third-party/dashdotrobot/bike-wheel-calc"]
+	path = third-party/dashdotrobot/bike-wheel-calc
+	url = https://github.com/dashdotrobot/bike-wheel-calc.git

@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """
 Computes the reference (ground-truth) values for every hub in
-hub_catalogue.json, using the unmodified, vendored dashdotrobot library
-(vendor/bike-wheel-calc/bikewheelcalc/) with the exact settings
-js/engine.js documents itself as matching:
+hub_catalogue.json, using Ford's own bike-wheel-calc library, unmodified,
+via the third-party/dashdotrobot/bike-wheel-calc git submodule (pinned to
+commit 6fc380c), with the exact settings js/engine.js documents itself
+as matching:
 
     ratio  <- BicycleWheel.apply_tension(T_right=T_DS)
     K_lat  <- theory.calc_lat_stiff(N=24, smeared_spokes=True, tension=True,
@@ -23,7 +24,7 @@ import json
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "vendor" / "bike-wheel-calc"))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "third-party" / "dashdotrobot" / "bike-wheel-calc"))
 from bikewheelcalc import BicycleWheel, Rim, Hub
 from bikewheelcalc.theory import calc_lat_stiff, calc_rad_stiff, calc_buckling_tension
 

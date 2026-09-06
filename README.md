@@ -29,11 +29,11 @@ source, at [github.com/dashdotrobot/bike-wheel-calc](https://github.com/dashdotr
 reference code are entirely his work.** This repo does two things with
 it:
 
-1. **Vendors his Python source unmodified** (`vendor/bike-wheel-calc/bikewheelcalc/`),
-   pinned to commit [`6fc380c`](https://github.com/dashdotrobot/bike-wheel-calc/commit/6fc380c3576307d825d24fdffbbcbc192a720300)
+1. **Includes his Python source unmodified**, via the
+   `third-party/dashdotrobot/bike-wheel-calc` git submodule, pinned to
+   commit [`6fc380c`](https://github.com/dashdotrobot/bike-wheel-calc/commit/6fc380c3576307d825d24fdffbbcbc192a720300)
    (2019-01-31 — the repository has had no further commits since, so this
-   is not a moving target). His `LICENSE` file is carried over unchanged
-   at `vendor/bike-wheel-calc/LICENSE`.
+   is not a moving target).
 2. **Provides a JavaScript port** (`js/engine.js`) of the specific
    functions both tools need, written to be checked against his Python
    continuously (see Validation below) rather than trusted by eye.
@@ -41,32 +41,32 @@ it:
 Any error in the JavaScript port is this repo's, not his. If you spot one,
 it reflects on this port, not on the thesis or the original library.
 
-His other wheel-related repos (the Bokeh app, the acoustic rim-testing
-notebooks, the PhD thesis's full code/data, etc.) are archived as git
-submodules under `third-party/dashdotrobot/`, and his published papers
-live in `papers/`. They're here so wheel-strength-related tools built in
-this org have his actual apps, notebooks, and derivations on hand to run
-and test against natively — rather than everyone re-finding and re-cloning
-his repos individually whenever a question comes up about how a number in
+All of his other wheel-related repos — including `bike-wheel-calc` above
+— are archived the same way, as git submodules under
+`third-party/dashdotrobot/`, and his published papers live in `papers/`.
+They're here so wheel-strength-related tools built in this org have his
+actual apps, notebooks, and derivations on hand to run and test against
+natively — rather than everyone re-finding and re-cloning his repos
+individually whenever a question comes up about how a number in
 `engine.js` was originally derived or validated. See
 [`CREDITS.md`](./CREDITS.md) for the full list, each one's license status,
 and how to add more.
 
-`vendor/bike-wheel-calc/` and `third-party/dashdotrobot/` are both his
-work, split by role rather than importance: `vendor/` is the one repo this
-engine is actually built from and continuously validated against (see
-below); `third-party/dashdotrobot/` is his other repos, archived for
-reference but not consumed as a dependency by anything here.
+`bike-wheel-calc` is the one submodule under `third-party/dashdotrobot/`
+that's also an actual build/validation dependency, not just an archived
+reference — `validation/reference.py` imports directly from it (see
+Validation below), and `.github/workflows/validate.yml` checks out
+submodules specifically so that import works in CI. The other six are
+there purely for reference and aren't consumed by anything.
 
 ---
 
 ## What's in this repo
 
 ```
-vendor/bike-wheel-calc/   Ford's library, vendored verbatim, MIT-licensed
-vendor/bike-wheel-calc/LICENSE   His unmodified license file
+third-party/dashdotrobot/bike-wheel-calc/   Ford's library, submoduled, MIT-licensed
 js/engine.js              THE canonical JS engine both tools should consume
-validation/reference.py   Computes ground-truth values via the vendored Python
+validation/reference.py   Computes ground-truth values via bike-wheel-calc
 validation/run.mjs        Runs engine.js on the same inputs, diffs, PASS/FAIL
 validation/hub_catalogue.json   The hub geometries used as the test matrix
 validation/validation_baseline_*.csv   Dated results of each validation run
@@ -96,9 +96,10 @@ time, whether anyone asks or not.
 
 **Re-running it yourself:**
 ```bash
+git submodule update --init third-party/dashdotrobot/bike-wheel-calc
 cd validation
 pip install numpy scipy
-python3 reference.py   # writes reference.csv from the vendored Python library
+python3 reference.py   # writes reference.csv, via the bike-wheel-calc submodule
 node run.mjs            # runs engine.js, diffs against reference.csv, writes a dated baseline
 ```
 
@@ -138,8 +139,9 @@ truth — change it here, validate it here, then update the copy.
 
 ## License
 
-`vendor/bike-wheel-calc/bikewheelcalc/` and `vendor/bike-wheel-calc/LICENSE` are Matthew Ford's
-`bike-wheel-calc`, MIT-licensed, copied unmodified. `js/engine.js` is a
-derivative port of that same work and carries the same MIT terms.
+`third-party/dashdotrobot/bike-wheel-calc/` is Matthew Ford's
+`bike-wheel-calc`, MIT-licensed, included unmodified as a git submodule.
+`js/engine.js` is a derivative port of that same work and carries the
+same MIT terms.
 Everything else in this repo (validation scripts, this README) is
 © PostMillennium MTB, 2026.
