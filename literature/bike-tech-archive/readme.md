@@ -12,6 +12,9 @@
 next steps from claude: 
 
 open vol_4_3 first to confirm it's actually the Price & Akers paper (title, authors, page range).
+
 Go through the rest issue-by-issue, pull real article titles/authors off each cover/TOC page (not just trust filenames), and build a proper index.
+
 Rename everything to a clean convention and organize it as literature/bike-tech-archive/ in the repo — separate from the individual academic papers in papers//literature/ since this is a full periodical run, not discrete citations.
+
 Push it and open a PR the same way as everything else so far.
