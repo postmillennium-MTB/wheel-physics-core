@@ -18,26 +18,22 @@ sibling `MTB-wheel-lab` and `wheel-comparison-widget2` repos.
   [github.com/dashdotrobot](https://github.com/dashdotrobot) ·
   [dashdotrobot.com](https://dashdotrobot.com)
 
-## Vendored source (already in this repo, unchanged)
-
-- `vendor/bike-wheel-calc/bikewheelcalc/` + `vendor/bike-wheel-calc/LICENSE` — Ford's `bike-wheel-calc`,
-  MIT-licensed, copied verbatim at commit
-  [`6fc380c`](https://github.com/dashdotrobot/bike-wheel-calc/commit/6fc380c3576307d825d24fdffbbcbc192a720300).
-  See the main README for how it's used (validation ground truth for
-  `js/engine.js`).
-
 ## Archived repos (`third-party/dashdotrobot/`)
 
-Kept here so wheel-strength-related tools in this org have Ford's actual
-apps, notebooks, and derivations on hand to run and test against natively,
+Every one of Ford's other wheel-related repos lives here, with no
+exception — including `bike-wheel-calc`, the one this engine is actually
+built from and continuously validated against. Kept here so
+wheel-strength-related tools in this org have Ford's actual apps,
+notebooks, and derivations on hand to run and test against natively,
 rather than everyone re-finding and re-cloning his repos individually.
 Added as git submodules, not copies — each one points at Ford's own repo
 and commit, so `git log` inside any of them shows his real authorship, not
 a copy that's been re-attributed. `git submodule update --init --recursive`
-after cloning to pull them in.
+after cloning to pull them all in.
 
 | Submodule | What it is | License |
 |---|---|---|
+| `bike-wheel-calc` | The reference implementation of the Mode Matrix method this engine is ported from and validated against (see main README) — the one submodule here that's also a build/validation dependency, not just archived reference | MIT |
 | `bike-wheel-api` | RESTful service for wheel deformation/tension calculations | **none declared** |
 | `wheel-app` | Bokeh GUI for the wheel calculator — source of the 7-rim stiffness preset table cited in `MTB-wheel-lab`'s regression README | GPLv3 |
 | `wheel-app-js` | HTML/JS front-end for `wheel-app`'s API | **none declared** |
@@ -45,19 +41,17 @@ after cloning to pull them in.
 | `bmd2016` | Paper + code, "Buckling of the Bicycle Wheel," Bicycle and Motorcycle Dynamics Symposium 2016 | **none declared** |
 | `phd-thesis` | Full PhD dissertation + all supporting code, data, and figures | **none declared** |
 
-`bike-wheel-calc` itself is **not** re-added as a submodule here — it's
-already vendored directly into `vendor/bike-wheel-calc/` (see above), so a
-submodule pointing at the same repo would just be a redundant second copy.
-
-**License note:** four of these six repos declare no license at all,
+**License note:** four of these seven repos declare no license at all,
 meaning GitHub's default (all rights reserved, viewable but not
 redistributable without permission) technically applies. They're linked
 here as submodules — a pointer to Ford's own public repo, not a copy of
 his content living inside this one — which is a much lower bar than
-vendoring, but if any of that code ever gets *used* (built, imported,
-shipped) rather than just archived for reference, get his explicit
-sign-off first rather than assuming the personal relationship implies a
-license.
+vendoring a copy would be, but if any of that code ever gets *used*
+(built, imported, shipped) rather than just archived for reference, get
+his explicit sign-off first rather than assuming the personal relationship
+implies a license. `bike-wheel-calc` is the one exception in practice —
+it's MIT-licensed and already the actual dependency `js/engine.js` is
+validated against.
 
 ## Papers (`papers/`)
 
