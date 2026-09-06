@@ -17,9 +17,17 @@ js/engine.js              THE canonical JS engine — edit here, not in a copy
 validation/                Checks engine.js against the vendored Python
 papers/                    Ford's own published papers (his work, cited)
 literature/                Wheel-mechanics papers by other authors
+literature/bike-tech-archive/  Full 24-issue run of Bike Tech (1982-1986)
 third-party/dashdotrobot/  Ford's other repos, archived as git submodules
 CREDITS.md                 Full attribution + per-submodule license status
 ```
+
+*Bike Tech* ran only four years (1982-1986, 24 issues) before folding, but
+`literature/bike-tech-archive/README.md`'s index gives some sense of the
+ground it covered in that short run — rim design and lacing-pattern
+stiffness, acoustic tension testing, aerodynamics, metallurgy — treating
+a bicycle as a subject for applied engineering well before that was the
+norm for a hobbyist publication.
 
 ## Before touching wheel strength or stiffness calculations
 
@@ -53,6 +61,19 @@ existing paper already answers or bears on the question:
   `rim_stiffness_index` estimate (documented in `MTB-wheel-lab`'s
   regression README) is the example of what NOT to leave uncited when a
   real source could instead be found, checked, and referenced.
+- **The question touches wheelbuilding practice rather than pure theory**
+  (spoke pattern, tension checking by ear, rim design terminology,
+  historical measurement methods) → check
+  `literature/bike-tech-archive/README.md`'s index too, not just
+  `papers/` and `literature/`'s individual citations. It's a full run of
+  *Bike Tech* (1982-1986), Rodale's technical newsletter, and several
+  issues are directly on-topic for this engine — Price & Akers (1985) on
+  lacing-pattern stiffness (`bike-tech-v4n3-jun1985.pdf`, already cited in
+  `literature/README.md`), Chris Juden's rim design/anatomy piece
+  (`bike-tech-v3n2-apr1984.pdf`), and John S. Allen's 1984 acoustic
+  spoke-tension test inside `bike-tech-v3n4-aug1984.pdf` are the ones
+  already flagged; the rest of the run hasn't had a full read for
+  relevance yet.
 
 **Never fabricate a citation or a number attributed to a paper.** If a
 claim can't be traced to a specific page/equation in one of the archived
@@ -76,6 +97,14 @@ relevant to — not just a bare citation. See either README for the
 established format before adding a new entry. If a paper turns out
 relevant to something in `MTB-wheel-lab`'s regression or `js/engine.js`,
 cross-reference it there too rather than leaving it only listed here.
+
+`literature/bike-tech-archive/` is a periodical archive, not discrete
+citations, and follows its own convention
+(`bike-tech-v<vol>n<no>-<month/season><year>.pdf`) — see its own README,
+not the citation-table format above. A single issue from it that turns
+out directly relevant (like Price & Akers) still gets a normal citation
+row in `literature/README.md`, pointing at the file's path inside the
+archive rather than duplicating the PDF.
 
 ## Working with `third-party/dashdotrobot/`
 
