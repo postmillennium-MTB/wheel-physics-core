@@ -15,9 +15,10 @@
  *   PhD thesis, Northwestern University.
  *
  * bike-wheel-calc is MIT-licensed, © 2015 Matthew Ford — see
- * python/LICENSE in this repo, vendored alongside the Python source this
- * file was ported from and validated against (python/bikewheelcalc/,
- * pinned to commit 6fc380c, 2019-01-31 — see README.md for how and why).
+ * vendor/bike-wheel-calc/LICENSE in this repo, vendored alongside the
+ * Python source this file was ported from and validated against
+ * (vendor/bike-wheel-calc/bikewheelcalc/, pinned to commit 6fc380c,
+ * 2019-01-31 — see README.md for how and why).
  * The method is Ford's; any porting error is this repo's, not his.
  *
  * Congruence targets (verified numerically against the Python library —

@@ -3,7 +3,7 @@ name: Validate engine.js against the reference Python library
 # Runs on every push and PR to main, and can be triggered by hand.
 # This is the check that matters: it does not run "when someone remembers
 # to" -- it runs on every change, automatically, and fails the build if
-# js/engine.js and the vendored Python (python/bikewheelcalc/) ever produce
+# js/engine.js and the vendored Python (vendor/bike-wheel-calc/) ever produce
 # different answers for the same hub. That is the whole point of this repo.
 on:
   push:

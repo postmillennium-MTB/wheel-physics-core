@@ -29,11 +29,11 @@ source, at [github.com/dashdotrobot/bike-wheel-calc](https://github.com/dashdotr
 reference code are entirely his work.** This repo does two things with
 it:
 
-1. **Vendors his Python source unmodified** (`python/bikewheelcalc/`),
+1. **Vendors his Python source unmodified** (`vendor/bike-wheel-calc/bikewheelcalc/`),
    pinned to commit [`6fc380c`](https://github.com/dashdotrobot/bike-wheel-calc/commit/6fc380c3576307d825d24fdffbbcbc192a720300)
    (2019-01-31 — the repository has had no further commits since, so this
    is not a moving target). His `LICENSE` file is carried over unchanged
-   at `python/LICENSE`.
+   at `vendor/bike-wheel-calc/LICENSE`.
 2. **Provides a JavaScript port** (`js/engine.js`) of the specific
    functions both tools need, written to be checked against his Python
    continuously (see Validation below) rather than trusted by eye.
@@ -52,13 +52,19 @@ his repos individually whenever a question comes up about how a number in
 [`CREDITS.md`](./CREDITS.md) for the full list, each one's license status,
 and how to add more.
 
+`vendor/bike-wheel-calc/` and `third-party/dashdotrobot/` are both his
+work, split by role rather than importance: `vendor/` is the one repo this
+engine is actually built from and continuously validated against (see
+below); `third-party/dashdotrobot/` is his other repos, archived for
+reference but not consumed as a dependency by anything here.
+
 ---
 
 ## What's in this repo
 
 ```
-python/bikewheelcalc/     Ford's library, vendored verbatim, MIT-licensed
-python/LICENSE            His unmodified license file
+vendor/bike-wheel-calc/   Ford's library, vendored verbatim, MIT-licensed
+vendor/bike-wheel-calc/LICENSE   His unmodified license file
 js/engine.js              THE canonical JS engine both tools should consume
 validation/reference.py   Computes ground-truth values via the vendored Python
 validation/run.mjs        Runs engine.js on the same inputs, diffs, PASS/FAIL
@@ -132,7 +138,7 @@ truth — change it here, validate it here, then update the copy.
 
 ## License
 
-`python/bikewheelcalc/` and `python/LICENSE` are Matthew Ford's
+`vendor/bike-wheel-calc/bikewheelcalc/` and `vendor/bike-wheel-calc/LICENSE` are Matthew Ford's
 `bike-wheel-calc`, MIT-licensed, copied unmodified. `js/engine.js` is a
 derivative port of that same work and carries the same MIT terms.
 Everything else in this repo (validation scripts, this README) is
