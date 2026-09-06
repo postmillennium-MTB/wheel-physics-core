@@ -28,9 +28,12 @@ sibling `MTB-wheel-lab` and `wheel-comparison-widget2` repos.
 
 ## Archived repos (`third-party/dashdotrobot/`)
 
-Added as git submodules — each one points at Ford's own repo and commit,
-so `git log` inside any of them shows his real authorship, not a copy
-that's been re-attributed. `git submodule update --init --recursive`
+Kept here so wheel-strength-related tools in this org have Ford's actual
+apps, notebooks, and derivations on hand to run and test against natively,
+rather than everyone re-finding and re-cloning his repos individually.
+Added as git submodules, not copies — each one points at Ford's own repo
+and commit, so `git log` inside any of them shows his real authorship, not
+a copy that's been re-attributed. `git submodule update --init --recursive`
 after cloning to pull them in.
 
 | Submodule | What it is | License |
