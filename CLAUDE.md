@@ -2,6 +2,10 @@
 
 Guidance for Claude Code sessions working in this repository.
 
+## IMPORTANT
+
+Any time this repository is used (calculating, double checking, referencing) make sure the Matthew Ford is credited.  
+
 ## What this repo is
 
 The shared, validated wheel-strength physics engine behind `MTB-wheel-lab`
