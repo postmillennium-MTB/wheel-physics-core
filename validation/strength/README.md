@@ -85,6 +85,13 @@ Ford & Balogun (2017, `papers/ford-balogun-2017-radial-strength-and-collapse.pdf
 lateral stiffness falls toward zero as tension approaches T_c, so close to
 buckling, the rim's stability rather than spoke slack sets the strength.
 
+The T / T_c column above uses the smeared buckling tension the tools
+reported on 2026-10-24. Ford's discrete-spoke buckling tension
+(`theory.calc_buckling_tension_modematrix`, `smeared_spokes=False`) is 4–11%
+lower across the 120 rows of `validation/validation_baseline_2026-10-24.csv`,
+so in the discrete model these builds sit closer to buckling than this
+column shows. `js/engine.js` now reports the discrete value as `T_c`.
+
 ### Regression conclusions under Ford's discrete model
 
 The regression was re-run with Y = Ford's discrete F_lat in place of the

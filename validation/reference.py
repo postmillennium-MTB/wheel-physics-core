@@ -10,7 +10,9 @@ as matching:
     K_lat  <- theory.calc_lat_stiff(N=24, smeared_spokes=True, tension=True,
                                      buckling=True, coupling=False, r0=False)
     K_rad  <- theory.calc_rad_stiff(same settings)
-    T_c    <- theory.calc_buckling_tension(approx='linear', N=24)
+    T_c    <- theory.calc_buckling_tension_modematrix(N=24, smeared_spokes=False,
+                                                       coupling=True, r0=False)
+    T_c_smeared <- theory.calc_buckling_tension(approx='linear', N=24)
     F_lat, F_rad <- first spoke slack under a unit point load, from
                     ModeMatrix (fully-discrete spokes, coupled, tension=True,
                     r0=False, N=24) and Spoke.calc_tension_change; the load
@@ -38,7 +40,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "third-party" / "dashdotrobot" / "bike-wheel-calc"))
 from bikewheelcalc import BicycleWheel, Rim, Hub
-from bikewheelcalc.theory import calc_lat_stiff, calc_rad_stiff, calc_buckling_tension
+from bikewheelcalc.theory import (calc_lat_stiff, calc_rad_stiff, calc_buckling_tension,
+                                  calc_buckling_tension_modematrix)
 from bikewheelcalc.mode_matrix import ModeMatrix
 
 SETUPS = [  # (ERD mm, spoke count, DS tension kgf)
@@ -118,7 +121,9 @@ def main():
                                     buckling=True, coupling=False, r0=False)
             K_rad = calc_rad_stiff(wheel, N=N_MODES, smeared_spokes=True, tension=True,
                                     buckling=True, coupling=False, r0=False)
-            T_c, n_c = calc_buckling_tension(wheel, approx="linear", N=N_MODES)
+            T_c_smeared, n_c = calc_buckling_tension(wheel, approx="linear", N=N_MODES)
+            T_c = calc_buckling_tension_modematrix(wheel, smeared_spokes=False, coupling=True,
+                                                   r0=False, N=N_MODES)
 
             mm = ModeMatrix(wheel, N=N_MODES)
             K = (mm.K_rim(tension=True, r0=False) +
@@ -136,6 +141,7 @@ def main():
                 "K_lat_Nmm": K_lat / 1000.0,
                 "K_rad_Nmm": K_rad / 1000.0,
                 "T_c_kgf": T_c / 9.81,
+                "T_c_smeared_kgf": T_c_smeared / 9.81,
                 "n_c": n_c,
                 "F_lat_kgf": F_lat / 9.81,
                 "F_rad_kgf": F_rad / 9.81,

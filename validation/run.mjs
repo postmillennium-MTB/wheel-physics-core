@@ -19,6 +19,12 @@ import { calc } from "../js/engine.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const MAX_DIFF_PCT = 1e-9; // floating-point noise; a real formula mismatch is orders of magnitude larger
+// T_c's reference comes from calc_buckling_tension_modematrix, which solves
+// the symmetric eigenproblem with scipy's general (non-symmetric) eig(). Its
+// result scatters by up to ~9e-10% from a symmetric solver (scipy eigh) on
+// the same matrices; engine.js agrees with eigh to ~1e-12%. The looser bound
+// covers that solver noise only.
+const MAX_DIFF_PCT_BY_METRIC = { T_c_kgf: 1e-7 };
 
 const catalogue = JSON.parse(readFileSync(join(__dirname, "hub_catalogue.json"), "utf8"));
 const R = catalogue.rim_constants;
@@ -57,17 +63,19 @@ for (const ref of refRows) {
     ["K_lat_Nmm", got.K_lat, +ref.K_lat_Nmm],
     ["K_rad_Nmm", got.K_rad, +ref.K_rad_Nmm],
     ["T_c_kgf", got.T_c, +ref.T_c_kgf],
+    ["T_c_smeared_kgf", got.T_c_smeared, +ref.T_c_smeared_kgf],
     ["F_lat_kgf", got.F_lat, +ref.F_lat_kgf],
     ["F_rad_kgf", got.F_rad, +ref.F_rad_kgf],
   ];
 
   let hubMaxDiff = 0;
-  for (const [, mine, theirs] of checks) {
+  let pass = true;
+  for (const [name, mine, theirs] of checks) {
     const diff = theirs === 0 ? Math.abs(mine) : Math.abs((mine / theirs - 1) * 100);
     hubMaxDiff = Math.max(hubMaxDiff, diff);
+    if (!(diff < (MAX_DIFF_PCT_BY_METRIC[name] ?? MAX_DIFF_PCT))) pass = false;
   }
   worstDiff = Math.max(worstDiff, hubMaxDiff);
-  const pass = hubMaxDiff < MAX_DIFF_PCT;
   if (!pass) anyFail = true;
 
   console.log(
@@ -84,6 +92,7 @@ for (const ref of refRows) {
     ref_K_lat_Nmm: ref.K_lat_Nmm, engine_K_lat_Nmm: got.K_lat,
     ref_K_rad_Nmm: ref.K_rad_Nmm, engine_K_rad_Nmm: got.K_rad,
     ref_T_c_kgf: ref.T_c_kgf, engine_T_c_kgf: got.T_c,
+    ref_T_c_smeared_kgf: ref.T_c_smeared_kgf, engine_T_c_smeared_kgf: got.T_c_smeared,
     ref_F_lat_kgf: ref.F_lat_kgf, engine_F_lat_kgf: got.F_lat,
     ref_F_rad_kgf: ref.F_rad_kgf, engine_F_rad_kgf: got.F_rad,
     max_diff_pct: hubMaxDiff,

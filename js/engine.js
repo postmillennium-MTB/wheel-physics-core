@@ -26,7 +26,9 @@
  *   K_lat  ↔ theory.calc_lat_stiff(N=24, smeared_spokes=True, tension=True,
  *                                  buckling=True, coupling=False, r0=False)
  *   K_rad  ↔ theory.calc_rad_stiff(same settings)
- *   T_c    ↔ theory.calc_buckling_tension(approx='linear', N=24)
+ *   T_c    ↔ theory.calc_buckling_tension_modematrix(N=24, smeared_spokes=False,
+ *                                  coupling=True, r0=False)
+ *   T_c_smeared ↔ theory.calc_buckling_tension(approx='linear', N=24)
  *   F_lat, F_rad ↔ first spoke slack from ModeMatrix(N=24), discrete spokes,
  *                  coupled, tension=True, r0=False (validation/reference.py)
  *
@@ -58,10 +60,23 @@ function spokeEA(d_mm) {
  * period (NDS/DS, leading/trailing), laterally and radially, in both
  * directions; the smallest load that brings any spoke to zero tension wins.
  * Returns loads in N and the side whose spoke slackens first.
+ *
+ * Also returns the critical (buckling) average tension of the same discrete
+ * model, as theory.calc_buckling_tension_modematrix(smeared_spokes=False,
+ * coupling=True, r0=False) computes it: the smallest positive T with
+ * (K_matl − T·K_geom)·x = 0, K_matl = K_rim_matl + K_spk(tension=False),
+ * K_geom = K_rim_geom − K_spk_geom. K_spk_geom weights each spoke by
+ * 2|n_u|/T_d exactly as mode_matrix.py does.
  */
-function firstSlackDiscrete(R, hub, Ns, N, T_DS, T_NDS, EA_DS, EA_NDS,
+const TC_CACHE = new Map();
+function discreteSpokeModel(R, hub, Ns, N, T_DS, T_NDS, EA_DS, EA_NDS,
                             T_avg, EIL, EIR, GJ, EA_rim) {
   const PI = Math.PI, M = 4 + 8 * N, nCross = 3, half = Ns / 2;
+  // T_c depends on geometry and stiffness only, not on the tension level, so
+  // a tension sweep of one build reuses it (and skips its matrices).
+  const tcKey = [R, hub.ds, hub.nds, hub.pds, hub.pnds, Ns, N, EA_DS, EA_NDS,
+                 EIL, EIR, GJ, EA_rim].join(',');
+  const tcKnown = TC_CACHE.get(tcKey), needTc = tcKnown === undefined;
 
   // Spokes in rim-angle order — BicycleWheel.lace_cross_ds / lace_cross_nds.
   const spokes = [];
@@ -93,8 +108,28 @@ function firstSlackDiscrete(R, hub, Ns, N, T_DS, T_NDS, EA_DS, EA_NDS,
     return { idx, val };
   }
 
-  const K = [];
-  for (let i = 0; i < M; i++) K.push(new Float64Array(M));
+  // K: stiffness at the current tensions (strength). Km, Kg: the material
+  // and geometric parts used for the buckling eigenproblem.
+  const K = [], Km = [], Kg = [];
+  for (let i = 0; i < M; i++) {
+    K.push(new Float64Array(M));
+    if (needTc) { Km.push(new Float64Array(M)); Kg.push(new Float64Array(M)); }
+  }
+
+  // The lacing repeats every four spokes (NDS/DS × leading/trailing), so the
+  // wheel has P = Ns/4-fold rotational symmetry and the spoke terms only
+  // couple modes n and m when n ≡ ±m (mod P). K is therefore block-diagonal
+  // once the unknowns are grouped by that class; only those blocks are
+  // assembled, and each is factored on its own (same result as one full
+  // solve, many times faster). Ns not divisible by 4 falls back to a single
+  // block.
+  const P = Ns % 4 === 0 ? Ns / 4 : 0;
+  const cls = new Int32Array(M);
+  for (let i = 4; i < M; i++) {
+    const n = Math.floor((i - 4) / 8) + 1;
+    cls[i] = P ? Math.min(n % P, (P - n % P) % P) : 0;
+  }
+  const nCls = P ? Math.floor(P / 2) + 1 : 1;
 
   // K_rim_matl − T_avg·K_rim_geom (mode_matrix.py, y0 = 0, r0 = False).
   K[1][1] = 2 * PI * EA_rim / R;
@@ -105,8 +140,13 @@ function firstSlackDiscrete(R, hub, Ns, N, T_DS, T_NDS, EA_DS, EA_NDS,
     const kvv = EIR * PI / (R*R*R) * n2*n2 + EA_rim * PI / R;
     const kww = EIR * PI / (R*R*R) * n2 + EA_rim * PI / R * n2;
     const kvw = -EIR * PI / (R*R*R) * n2*n - EA_rim * PI * n / R;
-    const kuu = EIL * PI / (R*R*R) * n2*n2 + GJ * PI / (R*R*R) * n2
-              - T_avg * geom * PI * n2;
+    const kuuM = EIL * PI / (R*R*R) * n2*n2 + GJ * PI / (R*R*R) * n2;
+    const kuuG = geom * PI * n2;
+    const kuu = kuuM - T_avg * kuuG;
+    if (needTc) {
+      Km[i0][i0] = kuuM; Km[i0+1][i0+1] = kuuM;
+      Kg[i0][i0] = kuuG; Kg[i0+1][i0+1] = kuuG;
+    }
     const kup = -(EIL * PI / (R*R) * n2 + GJ * PI / (R*R) * n2);
     const kpp = EIL * PI / R + GJ * PI / R * n2;
     K[i0+2][i0+2] = kvv; K[i0+3][i0+3] = kvv;
@@ -118,39 +158,60 @@ function firstSlackDiscrete(R, hub, Ns, N, T_DS, T_NDS, EA_DS, EA_NDS,
     K[i0+1][i0+7] = kup; K[i0+7][i0+1] = kup;
     K[i0+6][i0+6] = kpp; K[i0+7][i0+7] = kpp;
   }
+  // Rim terms other than k_uu carry no tension, so Km starts as a copy of K
+  // there (k_uu was set above without the tension term).
+  if (needTc) for (let i = 0; i < M; i++) for (let j = 0; j < M; j++) {
+    if (i >= 4 && i === j && ((i - 4) % 8) < 2) continue;
+    Km[i][j] = K[i][j];
+  }
+
+  // K_spk_geom weight per spoke (mode_matrix.py): 2|n_u|/T_d, T_d from the
+  // first two spokes (one per side).
+  const T_dK = Math.abs(spokes[0].n[0] * spokes[1].n[1]) +
+               Math.abs(spokes[1].n[0] * spokes[0].n[1]);
 
   // K_spk, discrete, tension=True: Σ B^T·k·B with k = (EA/L)·n⊗n + (T/L)·(I − n⊗n).
   for (const sp of spokes) {
     const b = [basis(sp.th, 0), basis(sp.th, 1), basis(sp.th, 2)];
     sp.b = b;
+    // The same basis entries split by symmetry class.
+    const g = b.map(bc => {
+      const out = [];
+      for (let c = 0; c < nCls; c++) out.push({ idx: [], val: [] });
+      for (let p = 0; p < bc.idx.length; p++) {
+        const o = out[cls[bc.idx[p]]];
+        o.idx.push(bc.idx[p]); o.val.push(bc.val[p]);
+      }
+      return out;
+    });
     for (let c = 0; c < 3; c++) {
       for (let d = 0; d < 3; d++) {
-        const nn = sp.n[c] * sp.n[d];
-        const k = (sp.EA / sp.L) * nn + (sp.T / sp.L) * ((c === d ? 1 : 0) - nn);
-        if (k === 0) continue;
-        const bc = b[c], bd = b[d];
+        const nn = sp.n[c] * sp.n[d], kf = ((c === d ? 1 : 0) - nn) / sp.L;
+        const km = (sp.EA / sp.L) * nn;
+        const k = km + sp.T * kf;
+        const kg = -2 * Math.abs(sp.n[0]) / T_dK * kf;
+        for (let cl = 0; cl < nCls; cl++) {
+        const bc = g[c][cl], bd = g[d][cl];
         for (let p = 0; p < bc.idx.length; p++) {
-          const row = K[bc.idx[p]], kp = k * bc.val[p];
-          for (let q = 0; q < bd.idx.length; q++) row[bd.idx[q]] += kp * bd.val[q];
+          const i = bc.idx[p], row = K[i], bp = bc.val[p];
+          if (needTc) {
+            const rm = Km[i], rg = Kg[i];
+            for (let q = 0; q < bd.idx.length; q++) {
+              const j = bd.idx[q], bb = bp * bd.val[q];
+              row[j] += k * bb; rm[j] += km * bb; rg[j] += kg * bb;
+            }
+          } else {
+            for (let q = 0; q < bd.idx.length; q++) row[bd.idx[q]] += k * bp * bd.val[q];
+          }
+        }
         }
       }
     }
   }
 
-  // The lacing repeats every four spokes (NDS/DS × leading/trailing), so the
-  // wheel has P = Ns/4-fold rotational symmetry and the spoke terms only
-  // couple modes n and m when n ≡ ±m (mod P). K is therefore block-diagonal
-  // once the unknowns are grouped by that class; each block is factored on
-  // its own (same result as one full solve, many times faster). Ns not
-  // divisible by 4 falls back to a single block.
-  const P = Ns % 4 === 0 ? Ns / 4 : 0;
-  const cls = new Int32Array(M);
-  for (let i = 4; i < M; i++) {
-    const n = Math.floor((i - 4) / 8) + 1;
-    cls[i] = P ? Math.min(n % P, (P - n % P) % P) : 0;
-  }
   const blocks = [];
-  for (let c = 0; c <= (P ? Math.floor(P / 2) : 0); c++) {
+  let T_c = Infinity;
+  for (let c = 0; c < nCls; c++) {
     const ix = [];
     for (let i = 0; i < M; i++) if (cls[i] === c) ix.push(i);
     if (!ix.length) continue;
@@ -178,6 +239,15 @@ function firstSlackDiscrete(R, hub, Ns, N, T_DS, T_NDS, EA_DS, EA_NDS,
       }
     }
     blocks.push({ ix, A, piv });
+    if (needTc) {
+      const mu = maxGenEig(Km, Kg, ix);
+      if (mu > 0) T_c = Math.min(T_c, 1 / mu);
+    }
+  }
+  if (!needTc) T_c = tcKnown;
+  else {
+    if (TC_CACHE.size > 2000) TC_CACHE.clear();
+    TC_CACHE.set(tcKey, T_c);
   }
   function solve(rhs) {
     const out = new Float64Array(M);
@@ -226,7 +296,105 @@ function firstSlackDiscrete(R, hub, Ns, N, T_DS, T_NDS, EA_DS, EA_NDS,
     return { load: best, gov };
   }
   const lat = slackLoad(0), rad = slackLoad(1);
-  return { F_lat: lat.load, latGov: lat.gov, F_rad: rad.load, radGov: rad.gov };
+  return { F_lat: lat.load, latGov: lat.gov, F_rad: rad.load, radGov: rad.gov, T_c };
+}
+
+/**
+ * Largest eigenvalue mu of Kg·x = mu·Km·x on the rows/columns ix, with Km
+ * symmetric positive definite: Cholesky Km = L·Lᵀ, then the symmetric
+ * C = L⁻¹·Kg·L⁻ᵀ, whose largest eigenvalue is found by tridiagonal
+ * reduction and bisection.
+ * The buckling tension is 1/mu for the largest positive mu, the same as the
+ * smallest positive root of Km·x = T·Kg·x that scipy's eig() returns in
+ * theory.calc_buckling_tension_modematrix.
+ */
+function maxGenEig(Km, Kg, ix) {
+  const m = ix.length, L = new Float64Array(m * m), C = new Float64Array(m * m);
+  for (let i = 0; i < m; i++) {
+    for (let j = 0; j <= i; j++) {
+      let s = Km[ix[i]][ix[j]];
+      for (let k = 0; k < j; k++) s -= L[i*m + k] * L[j*m + k];
+      if (i === j) {
+        if (!(s > 0)) return NaN;         // Km not positive definite
+        L[i*m + i] = Math.sqrt(s);
+      } else L[i*m + j] = s / L[j*m + j];
+    }
+  }
+  // Y = L⁻¹·Kg (column by column, stored transposed: Y[j*m + i] = Y_ij),
+  // then C = L⁻¹·Yᵀ, which is L⁻¹·Kg·L⁻ᵀ since Kg is symmetric.
+  const Y = new Float64Array(m * m);
+  for (let j = 0; j < m; j++) {
+    for (let i = 0; i < m; i++) {
+      let s = Kg[ix[i]][ix[j]];
+      for (let k = 0; k < i; k++) s -= L[i*m + k] * Y[j*m + k];
+      Y[j*m + i] = s / L[i*m + i];
+    }
+  }
+  for (let j = 0; j < m; j++) {          // column j of C = L⁻¹·(row j of Y)
+    for (let i = 0; i < m; i++) {
+      let s = Y[i*m + j];
+      for (let k = 0; k < i; k++) s -= L[i*m + k] * C[k*m + j];
+      C[i*m + j] = s / L[i*m + i];
+    }
+  }
+  for (let i = 0; i < m; i++) for (let j = 0; j < i; j++) {
+    const v = 0.5 * (C[i*m + j] + C[j*m + i]); C[i*m + j] = v; C[j*m + i] = v;
+  }
+  // Householder reduction to tridiagonal form, then bisection with Sturm
+  // counts for the largest eigenvalue.
+  const v = new Float64Array(m), pv = new Float64Array(m);
+  for (let k = 0; k < m - 2; k++) {
+    let norm = 0;
+    for (let i = k + 1; i < m; i++) norm += C[i*m + k] * C[i*m + k];
+    norm = Math.sqrt(norm);
+    if (norm === 0) continue;
+    const alpha = C[(k+1)*m + k] > 0 ? -norm : norm;
+    v.fill(0);
+    for (let i = k + 1; i < m; i++) v[i] = C[i*m + k];
+    v[k+1] -= alpha;
+    let vn = 0;
+    for (let i = k + 1; i < m; i++) vn += v[i] * v[i];
+    vn = Math.sqrt(vn);
+    if (vn === 0) continue;
+    for (let i = k + 1; i < m; i++) v[i] /= vn;
+    // A ← H·A·H with H = I − 2vvᵀ: A − 2(v·wᵀ + w·vᵀ), w = p − (vᵀp)·v, p = A·v.
+    for (let i = k; i < m; i++) {
+      let t = 0;
+      for (let j = k + 1; j < m; j++) t += C[i*m + j] * v[j];
+      pv[i] = t;
+    }
+    let vp = 0;
+    for (let i = k + 1; i < m; i++) vp += v[i] * pv[i];
+    for (let i = k; i < m; i++) pv[i] -= vp * v[i];
+    for (let i = k; i < m; i++) {
+      const vi = v[i], pi = pv[i], o = i*m;
+      for (let j = k; j < m; j++) C[o + j] -= 2 * (vi * pv[j] + pi * v[j]);
+    }
+  }
+  const d = new Float64Array(m), e = new Float64Array(m);
+  let lo = Infinity, hi = -Infinity;
+  for (let i = 0; i < m; i++) {
+    d[i] = C[i*m + i];
+    if (i < m - 1) e[i] = C[(i+1)*m + i];
+  }
+  for (let i = 0; i < m; i++) {            // Gershgorin bounds
+    const r = (i > 0 ? Math.abs(e[i-1]) : 0) + (i < m - 1 ? Math.abs(e[i]) : 0);
+    lo = Math.min(lo, d[i] - r); hi = Math.max(hi, d[i] + r);
+  }
+  const below = x => {                     // eigenvalues less than x
+    let cnt = 0, q = 1;
+    for (let i = 0; i < m; i++) {
+      q = d[i] - x - (i > 0 ? e[i-1] * e[i-1] / q : 0);
+      if (q === 0) q = 1e-300;
+      if (q < 0) cnt++;
+    }
+    return cnt;
+  };
+  for (let it = 0; it < 200 && hi - lo > 1e-15 * Math.max(Math.abs(lo), Math.abs(hi)); it++) {
+    const mid = 0.5 * (lo + hi);
+    if (below(mid) < m) lo = mid; else hi = mid;
+  }
+  return 0.5 * (lo + hi);
 }
 
 /**
@@ -314,9 +482,9 @@ function calc(erd_mm, hub, spkDS, spkNDS, tDS_kgf, EIL, EIR, GJ, EA_rim, Ns, N) 
   }
   const K_rad = 1 / C_rad;                              // [N/m]
 
-  // ── Buckling tension — theory.calc_buckling_tension(approx='linear') ─────
-  // Returns the critical AVERAGE radial tension T̄_c (the library's tension
-  // measure); we also convert to the equivalent DS tension for builders.
+  // ── Buckling tension, smeared — theory.calc_buckling_tension(approx='linear')
+  // The critical AVERAGE radial tension T̄_c (the library's tension measure).
+  // Kept for comparison (T_c_smeared); T_c below is the discrete-spoke value.
   const kuu0 = (half * ((EA_DS / gDS.L) * gDS.nu*gDS.nu +
                         (EA_NDS / gNDS.L) * gNDS.nu*gNDS.nu)) / circ; // tension=False
   const T_d  = Math.abs(gNDS.nu * gDS.nv) + Math.abs(gDS.nu * gNDS.nv);
@@ -327,17 +495,13 @@ function calc(erd_mm, hub, spkDS, spkNDS, tDS_kgf, EIL, EIR, GJ, EA_rim, Ns, N) 
   const kT = (circ / Ns) * kbar_geom_uu;
   const mu = GJ / EIL;                                  // I_warp = 0
   const luu = R*R*R*R / EIL * kuu0;                     // lup = lpp = 0 (b=0)
-  let T_c_avg = Infinity, n_c = 0;
+  let T_c_smeared = Infinity, n_c = 0;
   for (let n = 2; n <= N; n++) {
     const n2 = n * n;
     const t_c = luu + (mu * n2 * (n2 - 1) * (n2 - 1)) / (1 + mu * n2);
     const Tcn = 2 * PI * EIL / (Ns * R * R) * t_c / (n2 - R * kT);
-    if (Tcn > 0 && Tcn < T_c_avg) { T_c_avg = Tcn; n_c = n; }
+    if (Tcn > 0 && Tcn < T_c_smeared) { T_c_smeared = Tcn; n_c = n; }
   }
-  // Equivalent DS tension at buckling: tension scales linearly, so
-  // T_c(DS) = T̄_c · (T_DS / T̄_current)
-  const T_c_DS_eq = T_c_avg * (T_DS / T_avg);
-  const T_safety  = T_avg / T_c_avg;                    // = T_DS / T_c_DS_eq
 
   // ── Strength: first-spoke-slack loads (NOT library outputs) ──────────────
   // The library has no strength output. Strength here is the point load at
@@ -348,10 +512,19 @@ function calc(erd_mm, hub, spkDS, spkNDS, tDS_kgf, EIL, EIR, GJ, EA_rim, Ns, N) 
   // validation/reference.py, which runs exactly that in bike-wheel-calc.
   // Linear up to first slack; post-slack behaviour and rim buckling under
   // load (taco) are not modelled here.
-  const slack = firstSlackDiscrete(R, hub, Ns, N, T_DS, T_NDS, EA_DS, EA_NDS,
+  const slack = discreteSpokeModel(R, hub, Ns, N, T_DS, T_NDS, EA_DS, EA_NDS,
                                    T_avg, EIL, EIR, GJ, EA_rim);
   const F_lat_N = slack.F_lat, latGov = slack.latGov;
   const F_rad_N = slack.F_rad, radGov = slack.radGov;
+
+  // ── Buckling tension, discrete — theory.calc_buckling_tension_modematrix
+  // (smeared_spokes=False, coupling=True, r0=False), from the same matrices
+  // as the strength figures, so the buckling limit and the strength come
+  // from one model. Equivalent DS tension: tension scales linearly, so
+  // T_c(DS) = T̄_c · (T_DS / T̄_current).
+  const T_c_avg   = slack.T_c;
+  const T_c_DS_eq = T_c_avg * (T_DS / T_avg);
+  const T_safety  = T_avg / T_c_avg;                    // = T_DS / T_c_DS_eq
 
   // Smeared-spoke equivalents (Ford & Balogun 2017, Eq. 3 form): the load at
   // which the spoke under a point load reaches zero tension, using the
@@ -373,7 +546,8 @@ function calc(erd_mm, hub, spkDS, spkNDS, tDS_kgf, EIL, EIR, GJ, EA_rim, Ns, N) 
     T_c:      T_c_avg / 9.81,              // critical average tension [kgf]
     T_c_DS:   T_c_DS_eq / 9.81,            // equivalent DS tension [kgf]
     T_safety: T_safety * 100,              // current/critical [%]
-    n_c,                                   // critical mode number
+    n_c,                                   // critical mode number (smeared)
+    T_c_smeared: T_c_smeared / 9.81,       // [kgf] smeared, linear approx.
     F_lat:    F_lat_N / 9.81,              // [kgf]
     F_rad:    F_rad_N / 9.81,              // [kgf]
     F_lat_smeared: F_lat_smeared_N / 9.81, // [kgf] smeared-spoke comparison
