@@ -131,8 +131,9 @@ web. The stiffness outputs keep the library's `calc_lat_stiff` /
 `calc_rad_stiff` smeared settings. Rim buckling under load (taco) is not
 yet modelled; see Ford & Balogun (2017) in `papers/`.
 
-A `calc()` call solves one 196 × 196 system (N = 24), about 8 ms in Node on
-a server CPU. Callers that sweep many builds should cache results.
+The discrete solve is 196 unknowns at N = 24, split into independent blocks
+by the lacing's four-spoke symmetry; a `calc()` call takes about 3 ms in
+Node on a server CPU. Callers that sweep many builds should cache results.
 
 ## How each tool should consume this
 

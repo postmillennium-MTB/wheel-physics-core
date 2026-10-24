@@ -137,39 +137,68 @@ function firstSlackDiscrete(R, hub, Ns, N, T_DS, T_NDS, EA_DS, EA_NDS,
     }
   }
 
-  // LU factorization with partial pivoting.
-  const piv = new Int32Array(M);
-  for (let k = 0; k < M; k++) {
-    let p = k, big = Math.abs(K[k][k]);
-    for (let i = k + 1; i < M; i++) {
-      const a = Math.abs(K[i][k]);
-      if (a > big) { big = a; p = i; }
+  // The lacing repeats every four spokes (NDS/DS × leading/trailing), so the
+  // wheel has P = Ns/4-fold rotational symmetry and the spoke terms only
+  // couple modes n and m when n ≡ ±m (mod P). K is therefore block-diagonal
+  // once the unknowns are grouped by that class; each block is factored on
+  // its own (same result as one full solve, many times faster). Ns not
+  // divisible by 4 falls back to a single block.
+  const P = Ns % 4 === 0 ? Ns / 4 : 0;
+  const cls = new Int32Array(M);
+  for (let i = 4; i < M; i++) {
+    const n = Math.floor((i - 4) / 8) + 1;
+    cls[i] = P ? Math.min(n % P, (P - n % P) % P) : 0;
+  }
+  const blocks = [];
+  for (let c = 0; c <= (P ? Math.floor(P / 2) : 0); c++) {
+    const ix = [];
+    for (let i = 0; i < M; i++) if (cls[i] === c) ix.push(i);
+    if (!ix.length) continue;
+    // LU factorization with partial pivoting of K[ix][ix].
+    const m = ix.length, A = [], piv = new Int32Array(m);
+    for (let i = 0; i < m; i++) {
+      const row = new Float64Array(m), src = K[ix[i]];
+      for (let j = 0; j < m; j++) row[j] = src[ix[j]];
+      A.push(row);
     }
-    piv[k] = p;
-    if (p !== k) { const t = K[p]; K[p] = K[k]; K[k] = t; }
-    const pk = K[k][k], rk = K[k];
-    for (let i = k + 1; i < M; i++) {
-      const ri = K[i], f = ri[k] / pk;
-      if (f === 0) continue;
-      ri[k] = f;
-      for (let j = k + 1; j < M; j++) ri[j] -= f * rk[j];
+    for (let k = 0; k < m; k++) {
+      let p = k, big = Math.abs(A[k][k]);
+      for (let i = k + 1; i < m; i++) {
+        const v = Math.abs(A[i][k]);
+        if (v > big) { big = v; p = i; }
+      }
+      piv[k] = p;
+      if (p !== k) { const t = A[p]; A[p] = A[k]; A[k] = t; }
+      const pk = A[k][k], rk = A[k];
+      for (let i = k + 1; i < m; i++) {
+        const ri = A[i], f = ri[k] / pk;
+        if (f === 0) continue;
+        ri[k] = f;
+        for (let j = k + 1; j < m; j++) ri[j] -= f * rk[j];
+      }
     }
+    blocks.push({ ix, A, piv });
   }
   function solve(rhs) {
-    const x = Float64Array.from(rhs);
-    for (let k = 0; k < M; k++) {        // rows were swapped whole, so
-      const p = piv[k];                   // apply every swap first
-      if (p !== k) { const t = x[p]; x[p] = x[k]; x[k] = t; }
+    const out = new Float64Array(M);
+    for (const { ix, A, piv } of blocks) {
+      const m = ix.length, x = new Float64Array(m);
+      for (let i = 0; i < m; i++) x[i] = rhs[ix[i]];
+      for (let k = 0; k < m; k++) {      // rows were swapped whole, so
+        const p = piv[k];                 // apply every swap first
+        if (p !== k) { const t = x[p]; x[p] = x[k]; x[k] = t; }
+      }
+      for (let k = 0; k < m; k++) {
+        for (let i = k + 1; i < m; i++) x[i] -= A[i][k] * x[k];
+      }
+      for (let i = m - 1; i >= 0; i--) {
+        let s = x[i];
+        for (let j = i + 1; j < m; j++) s -= A[i][j] * x[j];
+        x[i] = s / A[i][i];
+      }
+      for (let i = 0; i < m; i++) out[ix[i]] = x[i];
     }
-    for (let k = 0; k < M; k++) {
-      for (let i = k + 1; i < M; i++) x[i] -= K[i][k] * x[k];
-    }
-    for (let i = M - 1; i >= 0; i--) {
-      let s = x[i];
-      for (let j = i + 1; j < M; j++) s -= K[i][j] * x[j];
-      x[i] = s / K[i][i];
-    }
-    return x;
+    return out;
   }
 
   // Unit loads at the first four spokes' rim points (one lacing period).
