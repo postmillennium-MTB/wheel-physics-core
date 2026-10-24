@@ -76,16 +76,31 @@ validation/validation_baseline_*.csv   Dated results of each validation run
 ## Validation
 
 `js/engine.js` is checked against the real Python library — not eyeballed,
-not trusted from a past run — using the full 25-hub catalogue both tools
-draw from. Each run computes every metric (tension ratio, lateral
-stiffness, radial stiffness, critical buckling tension) two ways — once
-via `theory.calc_lat_stiff()` / `calc_rad_stiff()` / `calc_buckling_tension()`
-in the vendored Python, once via `engine.js` — and fails loudly if they
-disagree by more than floating-point noise.
+not trusted from a past run — using the 30-hub catalogue both tools
+draw from, at four build setups (29" with 32 spokes at 100 kgf and 28
+spokes at 120 kgf, 26" with 32 spokes at 120 kgf, 32" with 32 spokes at
+100 kgf). Each run computes every metric two ways, once in the vendored
+Python and once via `engine.js`, and fails loudly if they disagree by
+more than floating-point noise:
 
-**Current result: all 25 hubs pass, worst-case difference 1.11 × 10⁻¹³%.**
-See `validation/validation_baseline_2026-09-03.csv` for the full row-by-row
-comparison.
+- tension ratio and lateral and radial stiffness, via
+  `theory.calc_lat_stiff()` / `calc_rad_stiff()`;
+- critical buckling tension two ways: `T_c` from
+  `theory.calc_buckling_tension_modematrix()` (fully-discrete spokes,
+  coupled), and `T_c_smeared` from `calc_buckling_tension()` (smeared,
+  linear approximation);
+- lateral and radial strength (`F_lat`, `F_rad`, first spoke slack under a
+  point load). The library has no strength function, so `reference.py`
+  builds it from the library's own `ModeMatrix` (fully-discrete spokes,
+  lateral/radial coupled) and `Spoke.calc_tension_change`.
+
+**Current result: all 120 hub-setup rows pass.** Every metric agrees to
+within 3.2 × 10⁻¹³%, except discrete `T_c` at 9 × 10⁻¹⁰%: the library function
+solves that eigenproblem with scipy's general `eig()`, which scatters by
+that much from a symmetric solver (`eigh`) on the same matrices, and
+`engine.js` agrees with `eigh` to about 10⁻¹²%. `run.mjs` allows 10⁻⁷% for
+that one metric. See `validation/validation_baseline_2026-10-24.csv` for the
+full row-by-row comparison.
 
 This runs automatically on every push via GitHub Actions
 (`.github/workflows/validate.yml`) — not as a manual step someone has to
@@ -94,11 +109,9 @@ repo exists to solve: a hand-run check only catches drift if someone
 happens to run it; a check that runs on every commit catches it every
 time, whether anyone asks or not.
 
-`F_lat`/`F_rad` (first-spoke-slack strength) are not library outputs, so
-this check can't cover them. `validation/strength/` checks them separately
-against first slack computed with Ford's own routines, and records how they
-compare with his more detailed individual-spoke model. See its README for
-the 2026-10-24 results.
+`validation/strength/` records the 2026-10-24 study that led to computing
+strength with discrete spokes: the earlier smeared-spoke strength figures
+differed from the discrete ones by up to 49% close to buckling.
 
 **Re-running it yourself:**
 ```bash
@@ -113,14 +126,28 @@ node run.mjs            # runs engine.js, diffs against reference.csv, writes a 
 
 `engine.js`'s header comment documents the exact library call each metric
 corresponds to. In short: smeared (Smith–Pippard) spokes, no spoke offset,
-no shear-center offset, no warping stiffness, N=24 harmonic modes, linear
-buckling approximation, 3-cross lacing (fixed), and a rim centroid radius
+no shear-center offset, no warping stiffness, N=24 harmonic modes,
+3-cross lacing (fixed), and a rim centroid radius
 of `ERD/2 + 11mm` (Ford §3.2 — the beam centroid sits inboard of the
 nipple seat for a double-wall MTB rim). Lateral/radial *strength* (F_lat,
-F_rad — the load at which the first spoke reaches zero pre-tension) are
-**not** library outputs; they're a first-order linear extension built on
-top of the validated stiffnesses, documented at the point they're computed
-in `engine.js`.
+F_rad — the point load at which the first spoke reaches zero pre-tension)
+are **not** library outputs. They are computed with the library's
+fully-discrete-spoke `ModeMatrix` (lateral and radial coupled), so each
+spoke sits at its real position rather than being averaged into a smeared
+web. The critical buckling tension `T_c` (and `T_safety`, `T_c_DS`) comes
+from the same discrete matrices, via the library's
+`calc_buckling_tension_modematrix`, so the strength figures and the
+buckling limit they are checked against belong to one model. It runs 4–11%
+below the smeared linear estimate across the 120 validation rows; the smeared value
+is still returned as `T_c_smeared`. The stiffness outputs keep the library's
+`calc_lat_stiff` / `calc_rad_stiff` smeared settings. Rim buckling under
+load (taco) is not yet modelled; see Ford & Balogun (2017) in `papers/`.
+
+The discrete solve is 196 unknowns at N = 24, split into independent blocks
+by the lacing's four-spoke symmetry. A `calc()` call takes about 3–4 ms in
+Node on a server CPU, plus about 3 ms the first time a geometry is seen
+(the buckling eigenproblem; `T_c` does not depend on tension, so it is
+cached per geometry). Callers that sweep many builds should cache results.
 
 ## How each tool should consume this
 

@@ -16,7 +16,7 @@
    "pnds": 50
   },
   {
-   "name": "h5 SPANK HEX J-TYPE BOOST R148",
+   "name": "h5 Spank Hex J-Type Boost R148",
    "std": 148,
    "ds": 25,
    "nds": 37,
@@ -24,7 +24,7 @@
    "pnds": 58
   },
   {
-   "name": "h6 CK 148x12 CENTERLOCK REAR",
+   "name": "h6 CK 148x12 Centerlock Rear",
    "std": 148,
    "ds": 24,
    "nds": 36.3,
@@ -32,7 +32,7 @@
    "pnds": 57.4
   },
   {
-   "name": "h8 project 321 G3 148x12",
+   "name": "h8 Project 321 G3 148x12",
    "std": 148,
    "ds": 22,
    "nds": 32,
@@ -40,7 +40,7 @@
    "pnds": 55
   },
   {
-   "name": "h10 Hydra Mountain 6 Bolt Rear 148",
+   "name": "h10 Hydra Mountain 6-Bolt 148",
    "std": 148,
    "ds": 25,
    "nds": 38,
@@ -48,7 +48,7 @@
    "pnds": 58
   },
   {
-   "name": "h12 I9 Hydra Centerlock Rear 148",
+   "name": "h12 I9 Hydra Centerlock 148",
    "std": 148,
    "ds": 24,
    "nds": 39,
@@ -56,7 +56,7 @@
    "pnds": 49
   },
   {
-   "name": "h14 I9 1/1 Mountain 6 Bolt 148",
+   "name": "h14 I9 1/1 Mountain 6-Bolt 148",
    "std": 148,
    "ds": 23,
    "nds": 37,
@@ -64,7 +64,7 @@
    "pnds": 58
   },
   {
-   "name": "h15 Hope Pro5 148 6 bolt",
+   "name": "h15 Hope Pro5 148 6-bolt",
    "std": 148,
    "ds": 22.6,
    "nds": 35,
@@ -72,7 +72,7 @@
    "pnds": 57
   },
   {
-   "name": "h17 Erase MTB IS 148x12 V2 j-bend",
+   "name": "h17 Erase MTB IS 148x12 V2",
    "std": 148,
    "ds": 25,
    "nds": 38,
@@ -144,7 +144,7 @@
    "pnds": 42
   },
   {
-   "name": "h4 SPANK HEX J-TYPE R150/157",
+   "name": "h4 Spank Hex J-Type R150/157",
    "std": 157,
    "ds": 29.5,
    "nds": 39.5,
@@ -152,7 +152,7 @@
    "pnds": 58
   },
   {
-   "name": "h7 CK 157 SB CENTERLOCK REAR",
+   "name": "h7 CK 157 SB Centerlock Rear",
    "std": 157,
    "ds": 28.8,
    "nds": 40.3,
@@ -160,7 +160,7 @@
    "pnds": 57.4
   },
   {
-   "name": "h9 project 321 G3 157 SB",
+   "name": "h9 Project 321 G3 157 SB",
    "std": 157,
    "ds": 26.5,
    "nds": 32,
@@ -168,7 +168,7 @@
    "pnds": 55
   },
   {
-   "name": "h11 I9 Hydra 6 Bolt 150/157",
+   "name": "h11 I9 Hydra 6-Bolt 150/157",
    "std": 157,
    "ds": 29,
    "nds": 41,
@@ -184,7 +184,7 @@
    "pnds": 49
   },
   {
-   "name": "h16 Hope Pro5 157 SB 6 bolt",
+   "name": "h16 Hope Pro5 157 SB 6-bolt",
    "std": 157,
    "ds": 27,
    "nds": 39.6,
@@ -192,7 +192,7 @@
    "pnds": 57
   },
   {
-   "name": "h18 Erase MTB IS 157x12 v2 j-bend",
+   "name": "h18 Erase MTB IS 157x12 V2",
    "std": 157,
    "ds": 29.5,
    "nds": 42.5,
