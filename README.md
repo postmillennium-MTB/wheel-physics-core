@@ -94,6 +94,12 @@ repo exists to solve: a hand-run check only catches drift if someone
 happens to run it; a check that runs on every commit catches it every
 time, whether anyone asks or not.
 
+`F_lat`/`F_rad` (first-spoke-slack strength) are not library outputs, so
+this check can't cover them. `validation/strength/` checks them separately
+against first slack computed with Ford's own routines, and records how they
+compare with his more detailed individual-spoke model. See its README for
+the 2026-10-24 results.
+
 **Re-running it yourself:**
 ```bash
 git submodule update --init third-party/dashdotrobot/bike-wheel-calc
