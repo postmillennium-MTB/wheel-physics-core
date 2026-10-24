@@ -1,0 +1,83 @@
+==============================================================================
+RAW-UNIT OLS  (Y = F_lat, kgf)  -- SEs clustered by hub_id
+==============================================================================
+                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:                  F_lat   R-squared:                       0.927
+Model:                            OLS   Adj. R-squared:                  0.927
+Method:                 Least Squares   F-statistic:                     1382.
+Date:                Sat, 24 Oct 2026   Prob (F-statistic):           1.07e-35
+Time:                        05:41:05   Log-Likelihood:                -4310.4
+No. Observations:                2400   AIC:                             8641.
+Df Residuals:                    2390   BIC:                             8699.
+Df Model:                           9                                         
+Covariance Type:              cluster                                         
+=======================================================================================
+                          coef    std err          z      P>|z|      [0.025      0.975]
+---------------------------------------------------------------------------------------
+const                 -19.7990      1.865    -10.619      0.000     -23.454     -16.145
+tension_ratio           0.2919      0.013     22.561      0.000       0.267       0.317
+flange_width            0.4875      0.017     28.617      0.000       0.454       0.521
+pcd_mean                0.0249      0.015      1.632      0.103      -0.005       0.055
+standard_157           -0.3719      0.206     -1.809      0.070      -0.775       0.031
+rim_stiffness_index     9.1505      0.264     34.666      0.000       8.633       9.668
+spoke_diameter          1.5611      0.327      4.769      0.000       0.920       2.203
+spoke_count             0.5513      0.014     39.921      0.000       0.524       0.578
+tension_kgf             0.1216      0.007     17.102      0.000       0.108       0.136
+wheel_erd              -0.0868      0.003    -34.014      0.000      -0.092      -0.082
+==============================================================================
+Omnibus:                     1117.490   Durbin-Watson:                   1.580
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):            16228.708
+Skew:                          -1.819   Prob(JB):                         0.00
+Kurtosis:                      15.209   Cond. No.                     3.04e+04
+==============================================================================
+
+Notes:
+[1] Standard Errors are robust to cluster correlation (CRV1)
+[2] The condition number is large, 3.04e+04. This might indicate that there are
+strong multicollinearity or other numerical problems.
+
+==============================================================================
+STANDARDIZED BETAS (z-scored; comparable magnitude across units)
+==============================================================================
+                     std_beta  p_value
+rim_stiffness_index    0.6040   0.0000
+flange_width           0.4474   0.0000
+tension_ratio          0.3414   0.0000
+tension_kgf            0.3374   0.0000
+wheel_erd             -0.3291   0.0000
+spoke_count            0.2039   0.0000
+standard_157          -0.0344   0.0705
+spoke_diameter         0.0289   0.0000
+pcd_mean               0.0203   0.1027
+
+==============================================================================
+VARIANCE INFLATION FACTORS
+==============================================================================
+tension_ratio            1.752
+flange_width             3.348
+pcd_mean                 1.066
+standard_157             4.166
+rim_stiffness_index      1.000
+spoke_diameter           1.000
+spoke_count              1.000
+tension_kgf              1.000
+wheel_erd                1.000
+(>5 = notable collinearity; >10 = coefficient on that beta is unreliable)
+
+==============================================================================
+PARTIAL R^2 (variance uniquely attributable to each beta, unclustered OLS)
+==============================================================================
+  tension_ratio           partial R^2 = 0.0665
+  flange_width            partial R^2 = 0.0598
+  pcd_mean                partial R^2 = 0.0004
+  standard_157            partial R^2 = 0.0003
+  rim_stiffness_index     partial R^2 = 0.3648
+  spoke_diameter          partial R^2 = 0.0008
+  spoke_count             partial R^2 = 0.0416
+  tension_kgf             partial R^2 = 0.1138
+  wheel_erd               partial R^2 = 0.1083
+
+Full model R^2 = 0.9273   Adj R^2 = 0.9270   n = 2400
+
+Dataset written to wheel_strength_dataset.csv
