@@ -21,25 +21,183 @@
  * The method is Ford's; any porting error is this repo's, not his.
  *
  * Congruence targets (verified numerically against the Python library —
- * see validation/, worst-case diff 1.13e-13% across the full hub catalogue):
+ * see validation/, worst-case diff 3.7e-13% across 30 hubs × 4 build setups):
  *   ratio  ↔ BicycleWheel.apply_tension(T_right) tension balance
  *   K_lat  ↔ theory.calc_lat_stiff(N=24, smeared_spokes=True, tension=True,
  *                                  buckling=True, coupling=False, r0=False)
  *   K_rad  ↔ theory.calc_rad_stiff(same settings)
  *   T_c    ↔ theory.calc_buckling_tension(approx='linear', N=24)
+ *   F_lat, F_rad ↔ first spoke slack from ModeMatrix(N=24), discrete spokes,
+ *                  coupled, tension=True, r0=False (validation/reference.py)
  *
  * Model assumptions carried over from the library defaults:
  *   smeared (Smith–Pippard) spokes, no spoke offset (b = 0), no shear-center
  *   offset (y0 = 0), no warping stiffness (I_warp = 0), r0 = False.
  *
- * Strength metrics (F_lat, F_rad) are NOT library outputs. They are
- * first-spoke-slack thresholds built transparently on top of the library
- * stiffnesses — see comments at each formula.
+ * Strength metrics (F_lat, F_rad) are NOT library outputs (the library has
+ * no strength function). They are the point loads at which the first spoke
+ * goes slack, computed with the library's own ModeMatrix (fully-discrete
+ * spokes, lateral/radial coupled) and Spoke.calc_tension_change — see
+ * firstSlackDiscrete below. validation/ checks them against bike-wheel-calc
+ * to floating-point precision like the stiffness outputs.
  * ──────────────────────────────────────────────────────────────────────────── */
 
 function spokeEA(d_mm) {
   // Spoke.EA = pi/4 * d^2 * E,  steel E = 210 GPa (library convention)
   return Math.PI / 4 * Math.pow(d_mm / 1000, 2) * 210e9;
+}
+
+/**
+ * First-spoke-slack loads with fully-discrete spokes, lateral/radial coupled.
+ * Port of bike-wheel-calc's ModeMatrix (mode_matrix.py) for the settings this
+ * engine uses: no spoke offset (b = 0, so spokes carry no rim-rotation
+ * terms), y0 = 0, I_warp = 0, r0 = False, 3-cross lacing laid out exactly as
+ * BicycleWheel.lace_cross does. Unknowns per mode n >= 1 are
+ * (u_c, u_s, v_c, v_s, w_c, w_s, phi_c, phi_s); mode 0 is (u, v, w, phi).
+ * A unit point load is applied at each of the four spokes in one lacing
+ * period (NDS/DS, leading/trailing), laterally and radially, in both
+ * directions; the smallest load that brings any spoke to zero tension wins.
+ * Returns loads in N and the side whose spoke slackens first.
+ */
+function firstSlackDiscrete(R, hub, Ns, N, T_DS, T_NDS, EA_DS, EA_NDS,
+                            T_avg, EIL, EIR, GJ, EA_rim) {
+  const PI = Math.PI, M = 4 + 8 * N, nCross = 3, half = Ns / 2;
+
+  // Spokes in rim-angle order — BicycleWheel.lace_cross_ds / lace_cross_nds.
+  const spokes = [];
+  function addSide(isDS) {
+    const Rh = (isDS ? hub.pds : hub.pnds) / 2 / 1000;
+    const z  = isDS ? -hub.ds / 1000 : hub.nds / 1000;
+    for (let s = 0; s < half; s++) {
+      const th  = 2 * PI / half * (isDS ? s + 0.5 : s);
+      const dir = s % 2 === 0 ? 1 : -1;
+      const dh  = 2 * PI / half * nCross * dir;           // hub minus rim angle
+      const du = z, dv = R - Rh * Math.cos(dh), dw = Rh * Math.sin(dh);
+      const L = Math.sqrt(du*du + dv*dv + dw*dw);
+      spokes.push({ th, L, n: [du / L, dv / L, dw / L],
+                    EA: isDS ? EA_DS : EA_NDS, T: isDS ? T_DS : T_NDS,
+                    side: isDS ? 'DS' : 'NDS' });
+    }
+  }
+  addSide(true); addSide(false);
+  spokes.sort((a, b) => a.th - b.th);
+
+  // B_theta rows for components c = 0..2 (u, v, w) at angle th, as sparse
+  // (index, value) lists.
+  function basis(th, c) {
+    const idx = [c], val = [1];
+    for (let n = 1; n <= N; n++) {
+      idx.push(4 + 8 * (n - 1) + 2 * c, 4 + 8 * (n - 1) + 2 * c + 1);
+      val.push(Math.cos(n * th), Math.sin(n * th));
+    }
+    return { idx, val };
+  }
+
+  const K = [];
+  for (let i = 0; i < M; i++) K.push(new Float64Array(M));
+
+  // K_rim_matl − T_avg·K_rim_geom (mode_matrix.py, y0 = 0, r0 = False).
+  K[1][1] = 2 * PI * EA_rim / R;
+  K[3][3] = 2 * PI * EIL / R;
+  const geom = Ns / (2 * PI * R);
+  for (let n = 1; n <= N; n++) {
+    const i0 = 4 + 8 * (n - 1), n2 = n * n;
+    const kvv = EIR * PI / (R*R*R) * n2*n2 + EA_rim * PI / R;
+    const kww = EIR * PI / (R*R*R) * n2 + EA_rim * PI / R * n2;
+    const kvw = -EIR * PI / (R*R*R) * n2*n - EA_rim * PI * n / R;
+    const kuu = EIL * PI / (R*R*R) * n2*n2 + GJ * PI / (R*R*R) * n2
+              - T_avg * geom * PI * n2;
+    const kup = -(EIL * PI / (R*R) * n2 + GJ * PI / (R*R) * n2);
+    const kpp = EIL * PI / R + GJ * PI / R * n2;
+    K[i0+2][i0+2] = kvv; K[i0+3][i0+3] = kvv;
+    K[i0+4][i0+4] = kww; K[i0+5][i0+5] = kww;
+    K[i0+2][i0+5] = kvw; K[i0+5][i0+2] = kvw;
+    K[i0+3][i0+4] = -kvw; K[i0+4][i0+3] = -kvw;
+    K[i0][i0] = kuu; K[i0+1][i0+1] = kuu;
+    K[i0][i0+6] = kup; K[i0+6][i0] = kup;
+    K[i0+1][i0+7] = kup; K[i0+7][i0+1] = kup;
+    K[i0+6][i0+6] = kpp; K[i0+7][i0+7] = kpp;
+  }
+
+  // K_spk, discrete, tension=True: Σ B^T·k·B with k = (EA/L)·n⊗n + (T/L)·(I − n⊗n).
+  for (const sp of spokes) {
+    const b = [basis(sp.th, 0), basis(sp.th, 1), basis(sp.th, 2)];
+    sp.b = b;
+    for (let c = 0; c < 3; c++) {
+      for (let d = 0; d < 3; d++) {
+        const nn = sp.n[c] * sp.n[d];
+        const k = (sp.EA / sp.L) * nn + (sp.T / sp.L) * ((c === d ? 1 : 0) - nn);
+        if (k === 0) continue;
+        const bc = b[c], bd = b[d];
+        for (let p = 0; p < bc.idx.length; p++) {
+          const row = K[bc.idx[p]], kp = k * bc.val[p];
+          for (let q = 0; q < bd.idx.length; q++) row[bd.idx[q]] += kp * bd.val[q];
+        }
+      }
+    }
+  }
+
+  // LU factorization with partial pivoting.
+  const piv = new Int32Array(M);
+  for (let k = 0; k < M; k++) {
+    let p = k, big = Math.abs(K[k][k]);
+    for (let i = k + 1; i < M; i++) {
+      const a = Math.abs(K[i][k]);
+      if (a > big) { big = a; p = i; }
+    }
+    piv[k] = p;
+    if (p !== k) { const t = K[p]; K[p] = K[k]; K[k] = t; }
+    const pk = K[k][k], rk = K[k];
+    for (let i = k + 1; i < M; i++) {
+      const ri = K[i], f = ri[k] / pk;
+      if (f === 0) continue;
+      ri[k] = f;
+      for (let j = k + 1; j < M; j++) ri[j] -= f * rk[j];
+    }
+  }
+  function solve(rhs) {
+    const x = Float64Array.from(rhs);
+    for (let k = 0; k < M; k++) {        // rows were swapped whole, so
+      const p = piv[k];                   // apply every swap first
+      if (p !== k) { const t = x[p]; x[p] = x[k]; x[k] = t; }
+    }
+    for (let k = 0; k < M; k++) {
+      for (let i = k + 1; i < M; i++) x[i] -= K[i][k] * x[k];
+    }
+    for (let i = M - 1; i >= 0; i--) {
+      let s = x[i];
+      for (let j = i + 1; j < M; j++) s -= K[i][j] * x[j];
+      x[i] = s / K[i][i];
+    }
+    return x;
+  }
+
+  // Unit loads at the first four spokes' rim points (one lacing period).
+  function slackLoad(comp) {
+    let best = Infinity, gov = null;
+    for (let j = 0; j < 4; j++) {
+      const f = new Float64Array(M), bl = basis(spokes[j].th, comp);
+      for (let p = 0; p < bl.idx.length; p++) f[bl.idx[p]] += bl.val[p];
+      const d = solve(f);
+      for (const sp of spokes) {
+        // Rim displacement at this spoke, then ΔT per newton of load.
+        let un = 0;
+        for (let c = 0; c < 3; c++) {
+          const bc = sp.b[c];
+          let disp = 0;
+          for (let p = 0; p < bc.idx.length; p++) disp += bc.val[p] * d[bc.idx[p]];
+          un += sp.n[c] * disp;
+        }
+        const dT = -(sp.EA / sp.L) * un;
+        if (dT === 0) continue;
+        const load = sp.T / Math.abs(dT);   // load pushes one way or the other
+        if (load < best) { best = load; gov = sp.side; }
+      }
+    }
+    return { load: best, gov };
+  }
+  const lat = slackLoad(0), rad = slackLoad(1);
+  return { F_lat: lat.load, latGov: lat.gov, F_rad: rad.load, radGov: rad.gov };
 }
 
 /**
@@ -152,25 +310,30 @@ function calc(erd_mm, hub, spkDS, spkNDS, tDS_kgf, EIL, EIR, GJ, EA_rim, Ns, N) 
   const T_c_DS_eq = T_c_avg * (T_DS / T_avg);
   const T_safety  = T_avg / T_c_avg;                    // = T_DS / T_c_DS_eq
 
-  // ── Strength: first-spoke-slack thresholds (NOT library outputs) ─────────
-  // Spoke.calc_tension_change: ΔT = −(EA/L)·(n·d).  A point load deflects the
-  // rim locally by F/K (point-load stiffness already includes mode
-  // concentration).  The first spoke at the load point reaches zero tension
-  // when |ΔT| = T_pre. Linearized threshold — onset of slack, not collapse.
-  //
-  // Lateral: pushing the rim toward a flange slackens that side's spokes.
-  //   u_slack(side) = T_side · L_side / (EA_side · |n_u,side|)
+  // ── Strength: first-spoke-slack loads (NOT library outputs) ──────────────
+  // The library has no strength output. Strength here is the point load at
+  // which the first spoke reaches zero tension, computed with the library's
+  // own building blocks: ModeMatrix with fully-discrete spokes, lateral and
+  // radial coupled (each spoke at its real rim angle, with its own n vector),
+  // and Spoke.calc_tension_change, ΔT = −(EA/L)·(n·d). Validated against
+  // validation/reference.py, which runs exactly that in bike-wheel-calc.
+  // Linear up to first slack; post-slack behaviour and rim buckling under
+  // load (taco) are not modelled here.
+  const slack = firstSlackDiscrete(R, hub, Ns, N, T_DS, T_NDS, EA_DS, EA_NDS,
+                                   T_avg, EIL, EIR, GJ, EA_rim);
+  const F_lat_N = slack.F_lat, latGov = slack.latGov;
+  const F_rad_N = slack.F_rad, radGov = slack.radGov;
+
+  // Smeared-spoke equivalents (Ford & Balogun 2017, Eq. 3 form): the load at
+  // which the spoke under a point load reaches zero tension, using the
+  // smeared stiffnesses above. Kept for comparison only; the discrete values
+  // above are the strength figures. u_slack = T·L / (EA·|n_u|), likewise v.
   const uSlackDS  = T_DS  * gDS.L  / (EA_DS  * Math.abs(gDS.nu));
   const uSlackNDS = T_NDS * gNDS.L / (EA_NDS * Math.abs(gNDS.nu));
-  const latGov    = uSlackNDS <= uSlackDS ? 'NDS' : 'DS';
-  const F_lat_N   = K_lat * Math.min(uSlackDS, uSlackNDS);
-  //
-  // Radial: load at the contact patch presses the rim inward; bottom spokes
-  // lose tension. v_slack(side) = T_side · L_side / (EA_side · n_v,side)
   const vSlackDS  = T_DS  * gDS.L  / (EA_DS  * gDS.nv);
   const vSlackNDS = T_NDS * gNDS.L / (EA_NDS * gNDS.nv);
-  const radGov    = vSlackNDS <= vSlackDS ? 'NDS' : 'DS';
-  const F_rad_N   = K_rad * Math.min(vSlackDS, vSlackNDS);
+  const F_lat_smeared_N = K_lat * Math.min(uSlackDS, uSlackNDS);
+  const F_rad_smeared_N = K_rad * Math.min(vSlackDS, vSlackNDS);
 
   return {
     ratio:    ratio * 100,                 // NDS/DS tension, [%]
@@ -184,6 +347,8 @@ function calc(erd_mm, hub, spkDS, spkNDS, tDS_kgf, EIL, EIR, GJ, EA_rim, Ns, N) 
     n_c,                                   // critical mode number
     F_lat:    F_lat_N / 9.81,              // [kgf]
     F_rad:    F_rad_N / 9.81,              // [kgf]
+    F_lat_smeared: F_lat_smeared_N / 9.81, // [kgf] smeared-spoke comparison
+    F_rad_smeared: F_rad_smeared_N / 9.81, // [kgf] smeared-spoke comparison
     latGov, radGov,                        // which side slacks first
     L_DS: gDS.L * 1000, L_NDS: gNDS.L * 1000,
   };

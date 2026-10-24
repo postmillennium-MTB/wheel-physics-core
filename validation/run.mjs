@@ -23,25 +23,26 @@ const MAX_DIFF_PCT = 1e-9; // floating-point noise; a real formula mismatch is o
 const catalogue = JSON.parse(readFileSync(join(__dirname, "hub_catalogue.json"), "utf8"));
 const R = catalogue.rim_constants;
 
-const refText = readFileSync(join(__dirname, "reference.csv"), "utf8").trim().split("\n");
+const refText = readFileSync(join(__dirname, "reference.csv"), "utf8").trim().split(/\r?\n/);
 const refHeader = refText[0].split(",");
 const refRows = refText.slice(1).map((line) => {
   const cells = line.split(",");
   return Object.fromEntries(refHeader.map((h, i) => [h, cells[i]]));
 });
 
-const ERD_MM = 600, SPOKES = 32, SPOKE_DIA = 2.0, T_DS = 100;
+const SPOKE_DIA = 2.0;
 
 let worstDiff = 0;
 let anyFail = false;
 const outRows = [];
 
-for (const hub of catalogue.hubs) {
-  const ref = refRows.find((r) => r.hub_name === hub.name);
-  if (!ref) {
-    console.error(`no reference row for ${hub.name} -- did reference.py run on this catalogue?`);
+for (const ref of refRows) {
+  const hub = catalogue.hubs.find((h) => h.name === ref.hub_name);
+  if (!hub) {
+    console.error(`reference row for ${ref.hub_name} has no hub in hub_catalogue.json -- re-run reference.py`);
     process.exit(1);
   }
+  const ERD_MM = +ref.erd_mm, SPOKES = +ref.spokes, T_DS = +ref.tDS_kgf;
 
   const got = calc(
     ERD_MM,
@@ -56,6 +57,8 @@ for (const hub of catalogue.hubs) {
     ["K_lat_Nmm", got.K_lat, +ref.K_lat_Nmm],
     ["K_rad_Nmm", got.K_rad, +ref.K_rad_Nmm],
     ["T_c_kgf", got.T_c, +ref.T_c_kgf],
+    ["F_lat_kgf", got.F_lat, +ref.F_lat_kgf],
+    ["F_rad_kgf", got.F_rad, +ref.F_rad_kgf],
   ];
 
   let hubMaxDiff = 0;
@@ -68,7 +71,7 @@ for (const hub of catalogue.hubs) {
   if (!pass) anyFail = true;
 
   console.log(
-    `${pass ? "PASS" : "FAIL"}  ${hub.name.padEnd(32)}  max_diff=${hubMaxDiff.toExponential(2)}%`
+    `${pass ? "PASS" : "FAIL"}  ${String(ERD_MM).padEnd(4)} ${String(SPOKES).padEnd(3)} ${String(T_DS).padEnd(4)} ${hub.name.padEnd(32)}  max_diff=${hubMaxDiff.toExponential(2)}%`
   );
 
   outRows.push({
@@ -81,6 +84,8 @@ for (const hub of catalogue.hubs) {
     ref_K_lat_Nmm: ref.K_lat_Nmm, engine_K_lat_Nmm: got.K_lat,
     ref_K_rad_Nmm: ref.K_rad_Nmm, engine_K_rad_Nmm: got.K_rad,
     ref_T_c_kgf: ref.T_c_kgf, engine_T_c_kgf: got.T_c,
+    ref_F_lat_kgf: ref.F_lat_kgf, engine_F_lat_kgf: got.F_lat,
+    ref_F_rad_kgf: ref.F_rad_kgf, engine_F_rad_kgf: got.F_rad,
     max_diff_pct: hubMaxDiff,
     pass_fail: pass ? "PASS" : "FAIL",
   });
@@ -92,11 +97,11 @@ const header = Object.keys(outRows[0]);
 const csv = [header.join(","), ...outRows.map((r) => header.map((h) => r[h]).join(","))].join("\n");
 writeFileSync(outPath, csv + "\n");
 
-console.log(`\n${outRows.length} hubs checked. Worst-case diff: ${worstDiff.toExponential(2)}%.`);
+console.log(`\n${outRows.length} hub-setup rows checked. Worst-case diff: ${worstDiff.toExponential(2)}%.`);
 console.log(`Results written to ${outPath}`);
 
 if (anyFail) {
   console.error(`\nFAILED: engine.js diverges from the reference Python library beyond floating-point noise.`);
   process.exit(1);
 }
-console.log(`\nAll hubs PASS.`);
+console.log(`\nAll rows PASS.`);
