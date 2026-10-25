@@ -5,7 +5,8 @@
   "main": "js/engine.js",
   "license": "MIT",
   "scripts": {
-    "validate": "cd validation && python3 reference.py && node run.mjs"
+    "validate": "cd validation && python3 reference.py && node run.mjs",
+    "test": "node --test test/*.test.js"
   },
   "repository": {
     "type": "git",

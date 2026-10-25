@@ -20,6 +20,7 @@ third-party/dashdotrobot/bike-wheel-calc/  Ford's bike-wheel-calc, MIT -- a subm
                                             like the rest below, but also the one
                                             actual build/validation dependency
 js/engine.js              THE canonical JS engine — edit here, not in a copy
+js/build-link.js          Shared URL format for links between the two tools (not physics)
 validation/                Checks engine.js against bike-wheel-calc
 papers/                    Ford's own published papers (his work, cited)
 literature/                Wheel-mechanics papers by other authors
