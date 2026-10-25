@@ -13,6 +13,15 @@ as matching:
     T_c    <- theory.calc_buckling_tension_modematrix(N=24, smeared_spokes=False,
                                                        coupling=True, r0=False)
     T_c_smeared <- theory.calc_buckling_tension(approx='linear', N=24)
+    K_lat0 <- theory.calc_lat_stiff(same, but tension=False, buckling=False):
+              lateral stiffness at zero spoke tension
+    F_taco <- Ford & Balogun (2017) Eq. 2, P = K0_lat * R * (1 - T/T_c), with
+              K0_lat as above, R = wheel.rim.radius, T the average radial
+              tension (ModeMatrix.K_rim's T_avg) and T_c from
+              calc_buckling_tension_modematrix. The library has no taco
+              function, so this applies the paper's formula to the library's
+              own K0_lat, T_avg and T_c; it checks the engine's arithmetic and
+              inputs, not the paper's approximation.
     F_lat, F_rad <- first spoke slack under a unit point load, from
                     ModeMatrix (fully-discrete spokes, coupled, tension=True,
                     r0=False, N=24) and Spoke.calc_tension_change; the load
@@ -125,6 +134,12 @@ def main():
             T_c = calc_buckling_tension_modematrix(wheel, smeared_spokes=False, coupling=True,
                                                    r0=False, N=N_MODES)
 
+            K_lat0 = calc_lat_stiff(wheel, N=N_MODES, smeared_spokes=True, tension=False,
+                                     buckling=False, coupling=False, r0=False)
+            R_rim = wheel.rim.radius
+            T_avg = sum(s.tension * s.n[1] for s in wheel.spokes) / len(wheel.spokes)
+            F_taco = max(0.0, K_lat0 * R_rim * (1.0 - T_avg / T_c))
+
             mm = ModeMatrix(wheel, N=N_MODES)
             K = (mm.K_rim(tension=True, r0=False) +
                  mm.K_spk(tension=True, smeared_spokes=False))
@@ -145,6 +160,9 @@ def main():
                 "n_c": n_c,
                 "F_lat_kgf": F_lat / 9.81,
                 "F_rad_kgf": F_rad / 9.81,
+                "K_lat0_Nmm": K_lat0 / 1000.0,
+                "R_rim_mm": R_rim * 1000.0,
+                "F_taco_kgf": F_taco / 9.81,
             })
             print(f"  {hub['name']:32s} ratio={ratio_pct:7.4f}%  K_lat={K_lat/1000:9.4f} N/mm  "
                   f"T_c={T_c/9.81:8.4f} kgf  F_lat={F_lat/9.81:7.3f} kgf  F_rad={F_rad/9.81:8.3f} kgf")
