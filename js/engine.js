@@ -31,6 +31,15 @@
  *   T_c_smeared ↔ theory.calc_buckling_tension(approx='linear', N=24)
  *   F_lat, F_rad ↔ first spoke slack from ModeMatrix(N=24), discrete spokes,
  *                  coupled, tension=True, r0=False (validation/reference.py)
+ *   K_lat0 ↔ theory.calc_lat_stiff(same settings as K_lat but tension=False,
+ *                  buckling=False): lateral stiffness at zero spoke tension
+ *   F_taco ↔ NOT a library output. Ford & Balogun (2017), Eq. 2:
+ *                  P = K0_lat · R · (1 − T/T_c), applied to the library's
+ *                  K0_lat, T_avg and T_c (validation/reference.py does the same
+ *                  arithmetic in Python). The paper calls it a rough
+ *                  approximation; this checks the inputs and arithmetic, not
+ *                  the approximation. Radial load only: Ford has no sideways
+ *                  taco formula.
  *
  * Model assumptions carried over from the library defaults:
  *   smeared (Smith–Pippard) spokes, no spoke offset (b = 0), no shear-center
@@ -451,20 +460,31 @@ function calc(erd_mm, hub, spkDS, spkNDS, tDS_kgf, EIL, EIR, GJ, EA_rim, Ns, N) 
 
   // ── Lateral stiffness — theory.calc_lat_stiff, coupling=False ────────────
   // Mode n = 0: only the smeared spokes resist rigid lateral translation.
-  let C_lat = 1 / (circ * kbar_uu);
   // Modes n ≥ 1: solve the 2×2 (u, φ) system [ModeMatrix.K_rim_matl/-geom +
   // K_spk smeared].  Load at θ=0 excites cosine terms; u_n = Kpp/det.
-  for (let n = 1; n <= N; n++) {
-    const n2 = n * n;
-    const Kuu = EIL * PI / (R*R*R) * n2*n2 + GJ * PI / (R*R*R) * n2
-              + PI * R * kbar_uu
-              - T_avg * (Ns / circ) * PI * n2;          // K_rim_geom k_uu
-    const Kup = -(EIL * PI / (R*R) * n2 + GJ * PI / (R*R) * n2);
-    const Kpp = EIL * PI / R + GJ * PI / R * n2;
-    const det = Kuu * Kpp - Kup * Kup;
-    C_lat += Kpp / det;
+  // withTension / withBuckling are the library's tension= (spoke tension
+  // stiffening, via kbar) and buckling= (rim geometric term, K_rim tension=)
+  // switches. Both on gives K_lat; both off gives K⁰_lat, the stiffness at
+  // zero spoke tension, which Ford & Balogun (2017) Eq. 2 needs.
+  function latStiff(withTension, withBuckling) {
+    const kuu = (half * (kdiag(gDS, EA_DS, withTension ? T_DS : 0, gDS.nu*gDS.nu) +
+                         kdiag(gNDS, EA_NDS, withTension ? T_NDS : 0, gNDS.nu*gNDS.nu))) / circ;
+    const Tg = withBuckling ? T_avg : 0;
+    let C = 1 / (circ * kuu);
+    for (let n = 1; n <= N; n++) {
+      const n2 = n * n;
+      const Kuu = EIL * PI / (R*R*R) * n2*n2 + GJ * PI / (R*R*R) * n2
+                + PI * R * kuu
+                - Tg * (Ns / circ) * PI * n2;             // K_rim_geom k_uu
+      const Kup = -(EIL * PI / (R*R) * n2 + GJ * PI / (R*R) * n2);
+      const Kpp = EIL * PI / R + GJ * PI / R * n2;
+      const det = Kuu * Kpp - Kup * Kup;
+      C += Kpp / det;
+    }
+    return 1 / C;                                          // [N/m]
   }
-  const K_lat = 1 / C_lat;                              // [N/m]
+  const K_lat  = latStiff(true, true);                    // [N/m]
+  const K_lat0 = latStiff(false, false);                  // [N/m] zero tension
 
   // ── Radial stiffness — theory.calc_rad_stiff, coupling=False ─────────────
   // Mode n = 0: rim hoop (2π·EA/R) + smeared spokes.
@@ -542,6 +562,8 @@ function calc(erd_mm, hub, spkDS, spkNDS, tDS_kgf, EIL, EIR, GJ, EA_rim, Ns, N) 
     T_NDS:    T_NDS / 9.81,                // [kgf]
     T_avg:    T_avg / 9.81,                // [kgf]
     K_lat:    K_lat / 1000,                // [N/mm]
+    K_lat0:   K_lat0 / 1000,               // [N/mm] lateral stiffness at zero spoke tension
+    R_rim:    R * 1000,                    // [mm] rim centroid radius
     K_rad:    K_rad / 1000,                // [N/mm]
     T_c:      T_c_avg / 9.81,              // critical average tension [kgf]
     T_c_DS:   T_c_DS_eq / 9.81,            // equivalent DS tension [kgf]
@@ -549,6 +571,7 @@ function calc(erd_mm, hub, spkDS, spkNDS, tDS_kgf, EIL, EIR, GJ, EA_rim, Ns, N) 
     n_c,                                   // critical mode number (smeared)
     T_c_smeared: T_c_smeared / 9.81,       // [kgf] smeared, linear approx.
     F_lat:    F_lat_N / 9.81,              // [kgf]
+    F_taco:   Math.max(0, K_lat0 * R * (1 - T_safety)) / 9.81, // [kgf] rim-buckling load, F&B 2017 Eq. 2
     F_rad:    F_rad_N / 9.81,              // [kgf]
     F_lat_smeared: F_lat_smeared_N / 9.81, // [kgf] smeared-spoke comparison
     F_rad_smeared: F_rad_smeared_N / 9.81, // [kgf] smeared-spoke comparison

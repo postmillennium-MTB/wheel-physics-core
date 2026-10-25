@@ -99,7 +99,7 @@ within 3.2 × 10⁻¹³%, except discrete `T_c` at 9 × 10⁻¹⁰%: the library
 solves that eigenproblem with scipy's general `eig()`, which scatters by
 that much from a symmetric solver (`eigh`) on the same matrices, and
 `engine.js` agrees with `eigh` to about 10⁻¹²%. `run.mjs` allows 10⁻⁷% for
-that one metric. See `validation/validation_baseline_2026-10-24.csv` for the
+that one metric. See `validation/validation_baseline_2026-10-25.csv` for the
 full row-by-row comparison.
 
 This runs automatically on every push via GitHub Actions
@@ -141,7 +141,16 @@ buckling limit they are checked against belong to one model. It runs 4–11%
 below the smeared linear estimate across the 120 validation rows; the smeared value
 is still returned as `T_c_smeared`. The stiffness outputs keep the library's
 `calc_lat_stiff` / `calc_rad_stiff` smeared settings. Rim buckling under
-load (taco) is not yet modelled; see Ford & Balogun (2017) in `papers/`.
+load (taco) is returned as `F_taco`: Ford & Balogun (2017) Eq. 2,
+`P = K⁰_lat · R · (1 − T/T_c)`, with `K⁰_lat` (lateral stiffness at zero
+spoke tension, `K_lat0`) and `R` (`R_rim`) from the engine and `T/T_c` the
+discrete `T_safety`. The paper presents it as a rough approximation of the
+radial load that folds the rim, and `bike-wheel-calc` has no taco function,
+so validation checks that `K_lat0` matches the library's `calc_lat_stiff`
+at zero tension (8.9 × 10⁻¹⁴%) and that `F_taco` is that formula applied to
+the library's own inputs; it does not check the approximation itself. There
+is no sideways taco formula. Eq. 4 of the same paper (where spoke buckling
+and rim buckling coincide) is not implemented; see `papers/`.
 
 The discrete solve is 196 unknowns at N = 24, split into independent blocks
 by the lacing's four-spoke symmetry. A `calc()` call takes about 3–4 ms in

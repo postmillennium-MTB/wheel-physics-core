@@ -51,7 +51,9 @@ strength calculations are built on:
   into a single tension-independent wheel-strength expression. This is
   the direct theoretical ancestor of `F_lat`/`F_rad` (first-spoke-slack
   strength) as computed in `js/engine.js` and used throughout
-  `MTB-wheel-lab`'s regression analysis. The companion slide deck
+  `MTB-wheel-lab`'s regression analysis. Its Eq. 2 (rim buckling under radial load,
+  `P = K⁰_lat·R·(1 − T/T_c)`, which the paper calls a rough approximation) is
+  the source of the engine's `F_taco`. Eq. 4 is not implemented. The companion slide deck
   (`ford-papadopoulos-balogun-2017-radial-collapse-slides.pdf`) is a
   faster way into the intuition — FEA plots of the spoke-buckling/collapse
   boundary and the rim-buckling load ratio — before reading the full
