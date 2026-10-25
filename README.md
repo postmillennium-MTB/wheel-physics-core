@@ -66,6 +66,8 @@ there purely for reference and aren't consumed by anything.
 ```
 third-party/dashdotrobot/bike-wheel-calc/   Ford's library, submoduled, MIT-licensed
 js/engine.js              THE canonical JS engine both tools should consume
+js/build-link.js          Link format the two tools use to hand a build to each other
+test/build-link.test.js   Tests for that link format (npm test)
 validation/reference.py   Computes ground-truth values via bike-wheel-calc
 validation/run.mjs        Runs engine.js on the same inputs, diffs, PASS/FAIL
 validation/hub_catalogue.json   The hub geometries used as the test matrix
@@ -178,6 +180,23 @@ means something slightly different for each:
 Either way: **this repo's `js/engine.js` is the one to edit.** A copy of
 it living inside either tool's own repo is a copy, not a second source of
 truth — change it here, validate it here, then update the copy.
+
+## Build links between the tools
+
+`js/build-link.js` is the one place that defines how a build (two hubs,
+wheel size, drive-side tension, spoke count) travels in a URL, so the
+widget's "Explore why in the Lab" link and the Lab's "Quick compare" link
+land on the same build. It is not physics; it only carries settings. It
+keeps the hash keys the widget already used for its shareable links (`h1`,
+`h2`, `w1`, `w2`, `td1`, `td2`, `ns`), so links shared before this file
+existed still open. A Lab link adds the tab name first, for example
+`/wheel-lab/#compare&h1=h6&h2=h7&w1=29&td1=120&ns=32`, where `h1` is the
+148x12 hub and `h2` the 157x12 hub. Tension is snapped to the destination's
+range: the Lab offers 80-125 kgf, the widget 95-125 kgf.
+
+The Lab imports it at build time like `engine.js`; the widget keeps a
+pasted copy, same as its engine copy. `npm test` (also run in CI) checks
+the format.
 
 ## License
 
