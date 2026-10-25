@@ -44,6 +44,9 @@ jobs:
         working-directory: validation
         run: node run.mjs
 
+      - name: Test the shared build-link format (js/build-link.js)
+        run: node --test test/*.test.js
+
       - name: Upload validation results
         if: always()
         uses: actions/upload-artifact@v4
