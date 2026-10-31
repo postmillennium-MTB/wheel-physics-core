@@ -40,6 +40,11 @@
  *                  approximation; this checks the inputs and arithmetic, not
  *                  the approximation. Radial load only: Ford has no sideways
  *                  taco formula.
+ *   spokes (calc option) ↔ per-spoke tension change per unit point load,
+ *                  ModeMatrix.F_ext + Spoke.calc_tension_change at each of the
+ *                  four load points, lateral and radial; firstSlackCombined ↔
+ *                  first slack with both components in one F_ext call
+ *                  (validation/spokes/)
  *
  * Model assumptions carried over from the library defaults:
  *   smeared (Smith–Pippard) spokes, no spoke offset (b = 0), no shear-center
@@ -79,7 +84,7 @@ function spokeEA(d_mm) {
  */
 const TC_CACHE = new Map();
 function discreteSpokeModel(R, hub, Ns, N, T_DS, T_NDS, EA_DS, EA_NDS,
-                            T_avg, EIL, EIR, GJ, EA_rim) {
+                            T_avg, EIL, EIR, GJ, EA_rim, wantSpokes) {
   const PI = Math.PI, M = 4 + 8 * N, nCross = 3, half = Ns / 2;
   // T_c depends on geometry and stiffness only, not on the tension level, so
   // a tension sweep of one build reuses it (and skips its matrices).
@@ -98,7 +103,7 @@ function discreteSpokeModel(R, hub, Ns, N, T_DS, T_NDS, EA_DS, EA_NDS,
       const dh  = 2 * PI / half * nCross * dir;           // hub minus rim angle
       const du = z, dv = R - Rh * Math.cos(dh), dw = Rh * Math.sin(dh);
       const L = Math.sqrt(du*du + dv*dv + dw*dw);
-      spokes.push({ th, L, n: [du / L, dv / L, dw / L],
+      spokes.push({ th, thHub: th + dh, lead: dir === 1, L, n: [du / L, dv / L, dw / L],
                     EA: isDS ? EA_DS : EA_NDS, T: isDS ? T_DS : T_NDS,
                     side: isDS ? 'DS' : 'NDS' });
     }
@@ -281,13 +286,18 @@ function discreteSpokeModel(R, hub, Ns, N, T_DS, T_NDS, EA_DS, EA_NDS,
   }
 
   // Unit loads at the first four spokes' rim points (one lacing period).
-  function slackLoad(comp) {
-    let best = Infinity, gov = null;
+  // dT[comp][j][i] = tension change of spoke i per newton of load in
+  // direction comp at load point j, signed: comp 0 = lateral, +u toward the
+  // `nds` side; comp 1 = radial, +v toward the hub (the ground pushing up).
+  // Both signs of load are checked for first slack (a spoke that gains
+  // tension under +1 N loses it under −1 N).
+  function influence(comp) {
+    const out = [];
     for (let j = 0; j < 4; j++) {
       const f = new Float64Array(M), bl = basis(spokes[j].th, comp);
       for (let p = 0; p < bl.idx.length; p++) f[bl.idx[p]] += bl.val[p];
-      const d = solve(f);
-      for (const sp of spokes) {
+      const d = solve(f), dT = new Float64Array(spokes.length);
+      spokes.forEach((sp, i) => {
         // Rim displacement at this spoke, then ΔT per newton of load.
         let un = 0;
         for (let c = 0; c < 3; c++) {
@@ -296,16 +306,40 @@ function discreteSpokeModel(R, hub, Ns, N, T_DS, T_NDS, EA_DS, EA_NDS,
           for (let p = 0; p < bc.idx.length; p++) disp += bc.val[p] * d[bc.idx[p]];
           un += sp.n[c] * disp;
         }
-        const dT = -(sp.EA / sp.L) * un;
-        if (dT === 0) continue;
-        const load = sp.T / Math.abs(dT);   // load pushes one way or the other
+        dT[i] = -(sp.EA / sp.L) * un;
+      });
+      out.push(dT);
+    }
+    return out;
+  }
+  function slackLoad(dTs) {
+    let best = Infinity, gov = null;
+    for (const dT of dTs) {
+      spokes.forEach((sp, i) => {
+        if (dT[i] === 0) return;
+        const load = sp.T / Math.abs(dT[i]);   // load pushes one way or the other
         if (load < best) { best = load; gov = sp.side; }
-      }
+      });
     }
     return { load: best, gov };
   }
-  const lat = slackLoad(0), rad = slackLoad(1);
-  return { F_lat: lat.load, latGov: lat.gov, F_rad: rad.load, radGov: rad.gov, T_c };
+  const dTlat = influence(0), dTrad = influence(1);
+  const lat = slackLoad(dTlat), rad = slackLoad(dTrad);
+  const out = { F_lat: lat.load, latGov: lat.gov, F_rad: rad.load, radGov: rad.gov, T_c };
+  if (wantSpokes) {
+    out.spokes = {
+      th:    spokes.map((sp) => sp.th),
+      thHub: spokes.map((sp) => sp.thHub),
+      side:  spokes.map((sp) => sp.side),
+      lead:  spokes.map((sp) => sp.lead),
+      T:     spokes.map((sp) => sp.T / 9.81),
+      L:     spokes.map((sp) => sp.L * 1000),
+      loadTh: [0, 1, 2, 3].map((j) => spokes[j].th),
+      // N per N is also kgf per kgf.
+      dT: { lat: dTlat.map((a) => Array.from(a)), rad: dTrad.map((a) => Array.from(a)) },
+    };
+  }
+  return out;
 }
 
 /**
@@ -407,13 +441,19 @@ function maxGenEig(Km, Kg, ix) {
 }
 
 /**
- * calc(erd_mm, hub, spkDS, spkNDS, tDS_kgf, EIL, EIR, GJ, EA_rim, Ns, N)
+ * calc(erd_mm, hub, spkDS, spkNDS, tDS_kgf, EIL, EIR, GJ, EA_rim, Ns, N, opts)
+ *
+ * opts.spokes = true adds `spokes` to the result: every spoke's angles,
+ * side, built tension, and its tension change per unit point load (see
+ * discreteSpokeModel's influence()). Off by default; it costs nothing extra
+ * to compute but makes the result much larger. spokeTensions() and
+ * firstSlackCombined() below read it.
  *
  * hub: { ds, nds (center-to-flange, mm), pds, pnds (flange pitch dia, mm) }
  * Rim radius follows the validated convention R = ERD/2 + 11 mm (beam
  * centroid sits ~11 mm inboard of the nipple seat for a double-wall MTB rim).
  */
-function calc(erd_mm, hub, spkDS, spkNDS, tDS_kgf, EIL, EIR, GJ, EA_rim, Ns, N) {
+function calc(erd_mm, hub, spkDS, spkNDS, tDS_kgf, EIL, EIR, GJ, EA_rim, Ns, N, opts) {
   const PI = Math.PI;
   const R  = erd_mm / 2 / 1000 + 0.011;     // rim centroid radius [m]
   const nCross = 3;
@@ -533,7 +573,8 @@ function calc(erd_mm, hub, spkDS, spkNDS, tDS_kgf, EIL, EIR, GJ, EA_rim, Ns, N) 
   // Linear up to first slack; post-slack behaviour and rim buckling under
   // load (taco) are not modelled here.
   const slack = discreteSpokeModel(R, hub, Ns, N, T_DS, T_NDS, EA_DS, EA_NDS,
-                                   T_avg, EIL, EIR, GJ, EA_rim);
+                                   T_avg, EIL, EIR, GJ, EA_rim,
+                                   !!(opts && opts.spokes));
   const F_lat_N = slack.F_lat, latGov = slack.latGov;
   const F_rad_N = slack.F_rad, radGov = slack.radGov;
 
@@ -557,7 +598,7 @@ function calc(erd_mm, hub, spkDS, spkNDS, tDS_kgf, EIL, EIR, GJ, EA_rim, Ns, N) 
   const F_lat_smeared_N = K_lat * Math.min(uSlackDS, uSlackNDS);
   const F_rad_smeared_N = K_rad * Math.min(vSlackDS, vSlackNDS);
 
-  return {
+  const result = {
     ratio:    ratio * 100,                 // NDS/DS tension, [%]
     T_NDS:    T_NDS / 9.81,                // [kgf]
     T_avg:    T_avg / 9.81,                // [kgf]
@@ -578,6 +619,52 @@ function calc(erd_mm, hub, spkDS, spkNDS, tDS_kgf, EIL, EIR, GJ, EA_rim, Ns, N) 
     latGov, radGov,                        // which side slacks first
     L_DS: gDS.L * 1000, L_NDS: gNDS.L * 1000,
   };
+  if (slack.spokes) result.spokes = slack.spokes;
+  return result;
+}
+
+/**
+ * spokeTensions(result, { lat, rad, pos }) -> each spoke's tension [kgf]
+ * under a point load at load point `pos` (0..3, the rim points of
+ * result.spokes.loadTh), `lat` kgf sideways (+ toward the `nds` side) and
+ * `rad` kgf radially (+ toward the hub, i.e. the ground pushing up).
+ * Superposition of the two unit-load responses: exact in Ford's linear
+ * model up to the first spoke reaching zero, and an extrapolation past it
+ * (a slack spoke carries nothing, which the linear model does not know).
+ * `result` must come from calc(..., { spokes: true }).
+ */
+function spokeTensions(result, load) {
+  const s = result.spokes, j = load.pos || 0;
+  const lat = load.lat || 0, rad = load.rad || 0;
+  return s.T.map((T, i) => T + lat * s.dT.lat[j][i] + rad * s.dT.rad[j][i]);
+}
+
+/**
+ * firstSlackCombined(result, { lat, rad }) -> { scale, load, pos, spoke, side }
+ * For a point load in the direction (lat, rad) [kgf, signs as in
+ * spokeTensions], `scale` is the factor it can be multiplied by before the
+ * first spoke reaches zero tension, at the worst of the four load points;
+ * `load` is the magnitude of that scaled load [kgf]; `pos`, `spoke` and
+ * `side` say where the load sits and which spoke goes first. With a unit
+ * direction, scale = the first-slack load: {lat: 0, rad: 1} gives F_rad and
+ * {lat: 1, rad: 0} gives F_lat when the `nds` side is the looser one.
+ * Scanning directions traces the combined-load envelope.
+ */
+function firstSlackCombined(result, dir) {
+  const s = result.spokes, lat = dir.lat || 0, rad = dir.rad || 0;
+  let scale = Infinity, pos = -1, spoke = -1;
+  for (let j = 0; j < s.loadTh.length; j++) {
+    const a = s.dT.lat[j], b = s.dT.rad[j];
+    for (let i = 0; i < s.T.length; i++) {
+      const dT = lat * a[i] + rad * b[i];
+      if (dT < 0) {
+        const k = s.T[i] / -dT;
+        if (k < scale) { scale = k; pos = j; spoke = i; }
+      }
+    }
+  }
+  return { scale, load: scale * Math.hypot(lat, rad), pos, spoke,
+           side: spoke >= 0 ? s.side[spoke] : null };
 }
 
 // Usable as-is, with no build step, in either consuming repo:
@@ -586,7 +673,8 @@ function calc(erd_mm, hub, spkDS, spkNDS, tDS_kgf, EIL, EIR, GJ, EA_rim, Ns, N) 
 //      keyword, which a non-module script would fail to parse). Defines the
 //      top-level `calc` function directly, same as wheel-comparison-widget2's
 //      current inline <script id="engine">, and also sets
-//      window.WheelPhysicsCore = { calc } for callers that prefer a
+//      window.WheelPhysicsCore = { calc, spokeTensions,
+//      firstSlackCombined } for callers that prefer a
 //      namespaced reference.
 //   2. Node's CommonJS require('./engine.js') — used by the validation
 //      harness in this repo.
@@ -594,8 +682,8 @@ function calc(erd_mm, hub, spkDS, spkNDS, tDS_kgf, EIL, EIR, GJ, EA_rim, Ns, N) 
 //      can `import { calc } from '.../engine.js'` directly against the
 //      module.exports below with no native ES `export` needed on this file.
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { calc };
+  module.exports = { calc, spokeTensions, firstSlackCombined };
 }
 if (typeof window !== 'undefined') {
-  window.WheelPhysicsCore = { calc };
+  window.WheelPhysicsCore = { calc, spokeTensions, firstSlackCombined };
 }
