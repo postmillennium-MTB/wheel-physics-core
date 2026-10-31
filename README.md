@@ -68,10 +68,12 @@ third-party/dashdotrobot/bike-wheel-calc/   Ford's library, submoduled, MIT-lice
 js/engine.js              THE canonical JS engine both tools should consume
 js/build-link.js          Link format the two tools use to hand a build to each other
 test/build-link.test.js   Tests for that link format (npm test)
+test/spokes.test.js       Sign conventions of the per-spoke output (npm test)
 validation/reference.py   Computes ground-truth values via bike-wheel-calc
 validation/run.mjs        Runs engine.js on the same inputs, diffs, PASS/FAIL
 validation/hub_catalogue.json   The hub geometries used as the test matrix
 validation/validation_baseline_*.csv   Dated results of each validation run
+validation/spokes/         Per-spoke output check (spoke ring, load envelope)
 .github/workflows/validate.yml   Runs the validation on every push, automatically
 ```
 
@@ -111,6 +113,23 @@ repo exists to solve: a hand-run check only catches drift if someone
 happens to run it; a check that runs on every commit catches it every
 time, whether anyone asks or not.
 
+**Per-spoke output** (`calc(..., { spokes: true })`, `spokeTensions`,
+`firstSlackCombined`, used by the Lab's spoke ring and load envelope) has
+its own check in `validation/spokes/`. `reference_spokes.py` loads the
+rim with `ModeMatrix.F_ext` at each of the four load points of one lacing
+period and reads every spoke's change with `Spoke.calc_tension_change`;
+it also applies a sideways and a straight-down load together, in one
+`F_ext` call, at 13 angles. `run_spokes.mjs` compares all of it with the
+engine. Current result, 120 builds: every spoke's tension change agrees to
+a relative 5 × 10⁻¹⁴, combined-load first slack to 3 × 10⁻¹³%, and the
+pure directions reproduce `F_rad` and `F_lat`. The same script also sweeps
+the load point across a whole lacing period in 32 steps: no build slackens
+a spoke sooner with the load between spokes than at a spoke, so loading at
+spoke points (as `F_lat`, `F_rad` and the envelope do) is the worst case.
+See `validation/spokes/spokes_baseline_2026-10-31.csv`. Adding the option
+left every existing output unchanged: `run.mjs` reproduces
+`validation_baseline_2026-10-25.csv` byte for byte.
+
 `validation/strength/` records the 2026-10-24 study that led to computing
 strength with discrete spokes: the earlier smeared-spoke strength figures
 differed from the discrete ones by up to 49% close to buckling.
@@ -122,6 +141,9 @@ cd validation
 pip install numpy scipy
 python3 reference.py   # writes reference.csv, via the bike-wheel-calc submodule
 node run.mjs            # runs engine.js, diffs against reference.csv, writes a dated baseline
+cd spokes
+python3 reference_spokes.py   # per-spoke reference values (about 2 minutes)
+node run_spokes.mjs           # diffs engine.js's per-spoke output, writes a dated baseline
 ```
 
 ## Model settings

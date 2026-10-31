@@ -44,7 +44,15 @@ jobs:
         working-directory: validation
         run: node run.mjs
 
-      - name: Test the shared build-link format (js/build-link.js)
+      - name: Compute per-spoke reference values from bike-wheel-calc
+        working-directory: validation/spokes
+        run: python3 reference_spokes.py
+
+      - name: Check engine.js per-spoke output against them
+        working-directory: validation/spokes
+        run: node run_spokes.mjs
+
+      - name: Unit tests (build-link format, per-spoke conventions)
         run: node --test test/*.test.js
 
       - name: Upload validation results
@@ -52,4 +60,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: validation-results
-          path: validation/validation_baseline_*.csv
+          path: |
+            validation/validation_baseline_*.csv
+            validation/spokes/spokes_baseline_*.csv
