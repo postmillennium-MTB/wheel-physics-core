@@ -52,6 +52,14 @@ jobs:
         working-directory: validation/spokes
         run: node run_spokes.mjs
 
+      - name: Compute insight reference values (wind-up, affected spokes, per-mode buckling, K_lat sweep)
+        working-directory: validation/insights
+        run: python3 reference_insights.py
+
+      - name: Check engine.js insight outputs against them
+        working-directory: validation/insights
+        run: node run_insights.mjs
+
       - name: Unit tests (build-link format, per-spoke conventions)
         run: node --test test/*.test.js
 
