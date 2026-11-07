@@ -42,7 +42,10 @@
  *                  taco formula.
  *   spokes (calc option) ↔ per-spoke tension change per unit point load,
  *                  ModeMatrix.F_ext + Spoke.calc_tension_change at each of the
- *                  four load points, lateral and radial; firstSlackCombined ↔
+ *                  four load points, lateral, radial and tangential (the
+ *                  ground reaction to pedal/brake torque); firstSlackTorque ↔
+ *                  first-slack torque with radial and tangential loads in one
+ *                  F_ext call; firstSlackCombined ↔
  *                  first slack with both components in one F_ext call
  *                  (validation/spokes/)
  *
@@ -288,7 +291,10 @@ function discreteSpokeModel(R, hub, Ns, N, T_DS, T_NDS, EA_DS, EA_NDS,
   // Unit loads at the first four spokes' rim points (one lacing period).
   // dT[comp][j][i] = tension change of spoke i per newton of load in
   // direction comp at load point j, signed: comp 0 = lateral, +u toward the
-  // `nds` side; comp 1 = radial, +v toward the hub (the ground pushing up).
+  // `nds` side; comp 1 = radial, +v toward the hub (the ground pushing up);
+  // comp 2 = tangential, +w along increasing rim angle (the ground pushing
+  // the tire along the rim, which is how pedal or brake torque reaches a
+  // wheel whose hub is held still).
   // Both signs of load are checked for first slack (a spoke that gains
   // tension under +1 N loses it under −1 N).
   function influence(comp) {
@@ -327,6 +333,7 @@ function discreteSpokeModel(R, hub, Ns, N, T_DS, T_NDS, EA_DS, EA_NDS,
   const lat = slackLoad(dTlat), rad = slackLoad(dTrad);
   const out = { F_lat: lat.load, latGov: lat.gov, F_rad: rad.load, radGov: rad.gov, T_c };
   if (wantSpokes) {
+    const dTtan = influence(2);
     out.spokes = {
       th:    spokes.map((sp) => sp.th),
       thHub: spokes.map((sp) => sp.thHub),
@@ -335,8 +342,10 @@ function discreteSpokeModel(R, hub, Ns, N, T_DS, T_NDS, EA_DS, EA_NDS,
       T:     spokes.map((sp) => sp.T / 9.81),
       L:     spokes.map((sp) => sp.L * 1000),
       loadTh: [0, 1, 2, 3].map((j) => spokes[j].th),
+      R_m:   R,                              // rim centroid radius [m], for torque
       // N per N is also kgf per kgf.
-      dT: { lat: dTlat.map((a) => Array.from(a)), rad: dTrad.map((a) => Array.from(a)) },
+      dT: { lat: dTlat.map((a) => Array.from(a)), rad: dTrad.map((a) => Array.from(a)),
+            tan: dTtan.map((a) => Array.from(a)) },
     };
   }
   return out;
@@ -661,10 +670,13 @@ function calc(erd_mm, hub, spkDS, spkNDS, tDS_kgf, EIL, EIR, GJ, EA_rim, Ns, N, 
 }
 
 /**
- * spokeTensions(result, { lat, rad, pos }) -> each spoke's tension [kgf]
- * under a point load at load point `pos` (0..3, the rim points of
- * result.spokes.loadTh), `lat` kgf sideways (+ toward the `nds` side) and
- * `rad` kgf radially (+ toward the hub, i.e. the ground pushing up).
+ * spokeTensions(result, { lat, rad, tan, torque, pos }) -> each spoke's
+ * tension [kgf] under a point load at load point `pos` (0..3, the rim points
+ * of result.spokes.loadTh), `lat` kgf sideways (+ toward the `nds` side),
+ * `rad` kgf radially (+ toward the hub, i.e. the ground pushing up) and
+ * `tan` kgf along the rim (+ toward increasing rim angle). `torque` [N·m]
+ * is a shorthand for a tangential load torque / R at the rim (the ground
+ * reaction to pedal or brake torque, the hub held still); it adds to `tan`.
  * Superposition of the two unit-load responses: exact in Ford's linear
  * model up to the first spoke reaching zero, and an extrapolation past it
  * (a slack spoke carries nothing, which the linear model does not know).
@@ -673,7 +685,9 @@ function calc(erd_mm, hub, spkDS, spkNDS, tDS_kgf, EIL, EIR, GJ, EA_rim, Ns, N, 
 function spokeTensions(result, load) {
   const s = result.spokes, j = load.pos || 0;
   const lat = load.lat || 0, rad = load.rad || 0;
-  return s.T.map((T, i) => T + lat * s.dT.lat[j][i] + rad * s.dT.rad[j][i]);
+  const tan = (load.tan || 0) + (load.torque || 0) / s.R_m / 9.81;
+  return s.T.map((T, i) => T + lat * s.dT.lat[j][i] + rad * s.dT.rad[j][i] +
+                           (tan ? tan * s.dT.tan[j][i] : 0));
 }
 
 /**
@@ -704,6 +718,35 @@ function firstSlackCombined(result, dir) {
            side: spoke >= 0 ? s.side[spoke] : null };
 }
 
+/**
+ * firstSlackTorque(result, { sign, rad, pos }) -> { torque, pos, spoke, side }
+ * Pedal or brake torque [N·m] at which the first spoke reaches zero tension,
+ * with the hub held still and the ground reaction applied as a tangential
+ * load torque / R at the contact point (see spokeTensions). `sign` = +1 or
+ * −1 picks the direction of the torque (+1 = the ground pushing the tire
+ * toward increasing rim angle); `rad` [kgf] is a fixed radial load at the
+ * same point (rider weight, + toward the hub) that is held constant while
+ * the torque grows. With `pos` (0..3) only that load point is checked;
+ * without it, the worst of the four. torque = Infinity if no spoke loses
+ * tension; 0 if the radial load alone already slackens one.
+ */
+function firstSlackTorque(result, opts) {
+  const s = result.spokes, sign = (opts && opts.sign) < 0 ? -1 : 1;
+  const rad = (opts && opts.rad) || 0;
+  const js = opts && opts.pos != null ? [opts.pos] : [0, 1, 2, 3];
+  const perNm = sign / s.R_m / 9.81;                 // kgf of tangential load per N·m
+  let torque = Infinity, pos = -1, spoke = -1;
+  for (const j of js) {
+    for (let i = 0; i < s.T.length; i++) {
+      const base = s.T[i] + rad * s.dT.rad[j][i];
+      const a = perNm * s.dT.tan[j][i];
+      const m = base <= 0 ? 0 : a < 0 ? base / -a : Infinity;
+      if (m < torque) { torque = m; pos = j; spoke = i; }
+    }
+  }
+  return { torque, pos, spoke, side: spoke >= 0 ? s.side[spoke] : null };
+}
+
 // Usable as-is, with no build step, in either consuming repo:
 //   1. Plain <script src="engine.js"> (a bare script tag, NOT
 //      type="module" — this file deliberately contains no `import`/`export`
@@ -711,7 +754,7 @@ function firstSlackCombined(result, dir) {
 //      top-level `calc` function directly, same as wheel-comparison-widget2's
 //      current inline <script id="engine">, and also sets
 //      window.WheelPhysicsCore = { calc, spokeTensions,
-//      firstSlackCombined } for callers that prefer a
+//      firstSlackCombined, firstSlackTorque } for callers that prefer a
 //      namespaced reference.
 //   2. Node's CommonJS require('./engine.js') — used by the validation
 //      harness in this repo.
@@ -719,8 +762,8 @@ function firstSlackCombined(result, dir) {
 //      can `import { calc } from '.../engine.js'` directly against the
 //      module.exports below with no native ES `export` needed on this file.
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { calc, spokeTensions, firstSlackCombined };
+  module.exports = { calc, spokeTensions, firstSlackCombined, firstSlackTorque };
 }
 if (typeof window !== 'undefined') {
-  window.WheelPhysicsCore = { calc, spokeTensions, firstSlackCombined };
+  window.WheelPhysicsCore = { calc, spokeTensions, firstSlackCombined, firstSlackTorque };
 }

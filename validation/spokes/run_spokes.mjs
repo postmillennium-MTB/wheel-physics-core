@@ -7,6 +7,10 @@
  *     of the four load points, element by element;
  *   - firstSlackCombined against first slack under a load the library
  *     applies with both components at once;
+ *   - every spoke's tension change per unit tangential load (the ground
+ *     reaction to pedal or brake torque), and firstSlackTorque against the
+ *     first-slack torque the library gives with the radial and tangential
+ *     components applied in one F_ext call;
  *   - firstSlackCombined in the pure directions against the engine's own
  *     F_rad and F_lat (which ../run.mjs checks against the library).
  * Fails (non-zero exit) on any mismatch beyond floating-point noise. Also
@@ -17,7 +21,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { calc, firstSlackCombined } from "../../js/engine.js";
+import { calc, firstSlackCombined, firstSlackTorque } from "../../js/engine.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 // dT entries near zero (spokes far from the load) are compared on an
@@ -28,7 +32,7 @@ const catalogue = JSON.parse(readFileSync(join(__dirname, "..", "hub_catalogue.j
 const R = catalogue.rim_constants;
 const refs = JSON.parse(readFileSync(join(__dirname, "reference_spokes.json"), "utf8"));
 
-let anyFail = false, worstDT = 0, worstComb = 0, worstSelf = 0;
+let anyFail = false, worstDT = 0, worstComb = 0, worstSelf = 0, worstTq = 0, worstResid = 0;
 const between = { rad: Infinity, lat_pos: Infinity, lat_neg: Infinity };
 const outRows = [];
 const pct = (a, b) => Math.abs((a / b - 1) * 100);
@@ -50,7 +54,7 @@ for (const ref of refs) {
 
   // Per-spoke influence.
   let rowDT = 0;
-  for (const comp of ["lat", "rad"]) {
+  for (const comp of ["lat", "rad", "tan"]) {
     for (let j = 0; j < 4; j++) {
       const mine = s.dT[comp][j], theirs = ref.dT[comp][j];
       const big = Math.max(...theirs.map(Math.abs));
@@ -71,6 +75,17 @@ for (const ref of refs) {
   }
   if (!(rowComb < MAX_DIFF_PCT)) fails.push(`combined ${rowComb.toExponential(2)}%`);
 
+  // Pedal / brake torque, with and without rider weight.
+  let rowTq = 0;
+  for (const t of ref.torque) {
+    const mine = firstSlackTorque(got, { sign: t.sign, rad: t.rad_kgf });
+    rowTq = Math.max(rowTq, pct(mine.torque, t.torque_Nm));
+    if (mine.pos !== t.pos) fails.push(`torque load point ${mine.pos} vs ${t.pos}`);
+    worstResid = Math.max(worstResid, Math.abs(t.resid_min_T_N) / (ref.tDS_kgf * 9.81));
+  }
+  if (!(rowTq < MAX_DIFF_PCT)) fails.push(`torque ${rowTq.toExponential(2)}%`);
+  worstTq = Math.max(worstTq, rowTq);
+
   // Pure directions reproduce the engine's own validated strength figures.
   const rad = firstSlackCombined(got, { lat: 0, rad: 1 }).scale;
   const latP = firstSlackCombined(got, { lat: 1, rad: 0 }).scale;
@@ -85,7 +100,7 @@ for (const ref of refs) {
   worstDT = Math.max(worstDT, rowDT); worstComb = Math.max(worstComb, rowComb); worstSelf = Math.max(worstSelf, self);
   const pass = fails.length === 0;
   if (!pass) { anyFail = true; console.log(`FAIL ${ref.hub_name} ${ref.erd_mm}/${ref.spokes}/${ref.tDS_kgf}: ${fails.join("; ")}`); }
-  outRows.push([ref.hub_name, ref.erd_mm, ref.spokes, ref.tDS_kgf, rowDT, rowComb, self,
+  outRows.push([ref.hub_name, ref.erd_mm, ref.spokes, ref.tDS_kgf, rowDT, rowComb, rowTq, self,
     (ref.between.rad.swept_kgf / ref.between.rad.spoke_points_kgf - 1) * 100,
     (ref.between.lat_pos.swept_kgf / ref.between.lat_pos.spoke_points_kgf - 1) * 100,
     (ref.between.lat_neg.swept_kgf / ref.between.lat_neg.spoke_points_kgf - 1) * 100,
@@ -93,13 +108,14 @@ for (const ref of refs) {
 }
 
 const date = new Date().toISOString().slice(0, 10);
-const header = "hub_name,erd_mm,spokes,tDS_kgf,dT_max_rel_err,combined_max_diff_pct,pure_vs_F_max_diff_pct,between_rad_pct,between_lat_nds_pct,between_lat_ds_pct,result";
+const header = "hub_name,erd_mm,spokes,tDS_kgf,dT_max_rel_err,combined_max_diff_pct,torque_max_diff_pct,pure_vs_F_max_diff_pct,between_rad_pct,between_lat_nds_pct,between_lat_ds_pct,result";
 writeFileSync(join(__dirname, `spokes_baseline_${date}.csv`),
   header + "\n" + outRows.map((r) => r.map((v) => (typeof v === "string" && v.includes(",") ? `"${v}"` : v)).join(",")).join("\n") + "\n");
 
 console.log(`${refs.length} builds checked.`);
 console.log(`  per-spoke dT: worst relative error ${worstDT.toExponential(2)}`);
 console.log(`  combined load vs library: worst diff ${worstComb.toExponential(2)}%`);
+console.log(`  first-slack torque vs library: worst diff ${worstTq.toExponential(2)}% (library check: lowest tension at that torque within ${worstResid.toExponential(2)} of DS tension)`);
 console.log(`  pure directions vs F_rad/F_lat: worst diff ${worstSelf.toExponential(2)}%`);
 console.log(`Study, load between spokes (lowest first slack across one lacing period vs at spoke points, most negative build):`);
 console.log(`  radial ${between.rad.toFixed(3)}%, lateral toward nds ${between.lat_pos.toFixed(3)}%, toward ds ${between.lat_neg.toFixed(3)}%`);
