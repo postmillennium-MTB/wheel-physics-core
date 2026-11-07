@@ -8,7 +8,7 @@
  },
  "hubs": [
   {
-   "name": "h1 Onyx 148 MFU",
+   "name": "h1 Onyx MFU 148x12",
    "std": 148,
    "ds": 22.92,
    "nds": 36.9,
@@ -16,7 +16,7 @@
    "pnds": 50
   },
   {
-   "name": "h5 Spank Hex J-Type Boost R148",
+   "name": "h5 Spank Hex J-Type 148x12",
    "std": 148,
    "ds": 25,
    "nds": 37,
@@ -24,7 +24,7 @@
    "pnds": 58
   },
   {
-   "name": "h6 CK 148x12 Centerlock Rear",
+   "name": "h6 CK Centerlock 148x12",
    "std": 148,
    "ds": 24,
    "nds": 36.3,
@@ -40,7 +40,7 @@
    "pnds": 55
   },
   {
-   "name": "h10 Hydra Mountain 6-Bolt 148",
+   "name": "h10 I9 Hydra Mountain 6-Bolt 148x12",
    "std": 148,
    "ds": 25,
    "nds": 38,
@@ -48,7 +48,7 @@
    "pnds": 58
   },
   {
-   "name": "h12 I9 Hydra Centerlock 148",
+   "name": "h12 I9 Hydra Centerlock 148x12",
    "std": 148,
    "ds": 24,
    "nds": 39,
@@ -56,7 +56,7 @@
    "pnds": 49
   },
   {
-   "name": "h14 I9 1/1 Mountain 6-Bolt 148",
+   "name": "h14 I9 1/1 Mountain 6-Bolt 148x12",
    "std": 148,
    "ds": 23,
    "nds": 37,
@@ -64,7 +64,7 @@
    "pnds": 58
   },
   {
-   "name": "h15 Hope Pro5 148 6-bolt",
+   "name": "h15 Hope Pro5 6-Bolt 148x12",
    "std": 148,
    "ds": 22.6,
    "nds": 35,
@@ -72,7 +72,7 @@
    "pnds": 57
   },
   {
-   "name": "h17 Erase MTB IS 148x12 V2",
+   "name": "h17 Erase MTB IS V2 148x12",
    "std": 148,
    "ds": 25,
    "nds": 38,
@@ -88,7 +88,7 @@
    "pnds": 52
   },
   {
-   "name": "h21 OneUp Rear Hub 148x12",
+   "name": "h21 OneUp 148x12",
    "std": 148,
    "ds": 23,
    "nds": 38,
@@ -96,7 +96,7 @@
    "pnds": 52
   },
   {
-   "name": "h23 KOM Xeno Rear Boost 148x12",
+   "name": "h23 KOM Xeno 148x12",
    "std": 148,
    "ds": 23.5,
    "nds": 30.5,
@@ -104,7 +104,7 @@
    "pnds": 46
   },
   {
-   "name": "h27 DMR Zone 148 Boost Centerlock",
+   "name": "h27 DMR Zone Centerlock 148x12",
    "std": 148,
    "ds": 21,
    "nds": 38,
@@ -112,7 +112,7 @@
    "pnds": 56
   },
   {
-   "name": "h28 DT Swiss 350 148 6-bolt",
+   "name": "h28 DT Swiss 350 6-Bolt 148x12",
    "std": 148,
    "ds": 23.3,
    "nds": 36.6,
@@ -120,7 +120,7 @@
    "pnds": 58
   },
   {
-   "name": "h30 e*thirteen Sidekick 148 Boost",
+   "name": "h30 e*thirteen Sidekick 148x12",
    "std": 148,
    "ds": 21,
    "nds": 38,
@@ -128,7 +128,7 @@
    "pnds": 60
   },
   {
-   "name": "h2 Onyx 150/157",
+   "name": "h2 Onyx 157x12",
    "std": 157,
    "ds": 27.42,
    "nds": 41.4,
@@ -136,7 +136,7 @@
    "pnds": 50
   },
   {
-   "name": "h3 Onyx 150/157 Vesper",
+   "name": "h3 Onyx Vesper 157x12",
    "std": 157,
    "ds": 26.97,
    "nds": 41.4,
@@ -144,7 +144,7 @@
    "pnds": 42
   },
   {
-   "name": "h4 Spank Hex J-Type R150/157",
+   "name": "h4 Spank Hex J-Type 157x12",
    "std": 157,
    "ds": 29.5,
    "nds": 39.5,
@@ -152,7 +152,7 @@
    "pnds": 58
   },
   {
-   "name": "h7 CK 157 SB Centerlock Rear",
+   "name": "h7 CK Centerlock 157x12",
    "std": 157,
    "ds": 28.8,
    "nds": 40.3,
@@ -160,7 +160,7 @@
    "pnds": 57.4
   },
   {
-   "name": "h9 Project 321 G3 157 SB",
+   "name": "h9 Project 321 G3 157x12",
    "std": 157,
    "ds": 26.5,
    "nds": 32,
@@ -168,7 +168,7 @@
    "pnds": 55
   },
   {
-   "name": "h11 I9 Hydra 6-Bolt 150/157",
+   "name": "h11 I9 Hydra 6-Bolt 157x12",
    "std": 157,
    "ds": 29,
    "nds": 41,
@@ -176,7 +176,7 @@
    "pnds": 58
   },
   {
-   "name": "h13 I9 Hydra Centerlock 157 SB",
+   "name": "h13 I9 Hydra Centerlock 157x12",
    "std": 157,
    "ds": 28,
    "nds": 43,
@@ -184,7 +184,7 @@
    "pnds": 49
   },
   {
-   "name": "h16 Hope Pro5 157 SB 6-bolt",
+   "name": "h16 Hope Pro5 6-Bolt 157x12",
    "std": 157,
    "ds": 27,
    "nds": 39.6,
@@ -192,7 +192,7 @@
    "pnds": 57
   },
   {
-   "name": "h18 Erase MTB IS 157x12 V2",
+   "name": "h18 Erase MTB IS V2 157x12",
    "std": 157,
    "ds": 29.5,
    "nds": 42.5,
@@ -200,7 +200,7 @@
    "pnds": 50
   },
   {
-   "name": "h19 Hadley 150/157",
+   "name": "h19 Hadley 157x12",
    "std": 157,
    "ds": 27.5,
    "nds": 41.5,
@@ -208,7 +208,7 @@
    "pnds": 59
   },
   {
-   "name": "h22 OneUp Rear Hub 157x12",
+   "name": "h22 OneUp 157x12",
    "std": 157,
    "ds": 26,
    "nds": 35,
@@ -216,7 +216,7 @@
    "pnds": 52.5
   },
   {
-   "name": "h24 KOM Xeno Rear Super Boost 157",
+   "name": "h24 KOM Xeno 157x12",
    "std": 157,
    "ds": 28,
    "nds": 35,
@@ -224,7 +224,7 @@
    "pnds": 46
   },
   {
-   "name": "h26 DMR Zone 157 SB Centerlock",
+   "name": "h26 DMR Zone Centerlock 157x12",
    "std": 157,
    "ds": 25,
    "nds": 41,
@@ -232,7 +232,7 @@
    "pnds": 56
   },
   {
-   "name": "h29 DT Swiss 350 157 6-bolt",
+   "name": "h29 DT Swiss 350 6-Bolt 157x12",
    "std": 157,
    "ds": 27.9,
    "nds": 41.1,
@@ -240,7 +240,7 @@
    "pnds": 60
   },
   {
-   "name": "h31 e*thirteen Sidekick Pro 157 SB",
+   "name": "h31 e*thirteen Sidekick Pro 157x12",
    "std": 157,
    "ds": 25.5,
    "nds": 42.5,
