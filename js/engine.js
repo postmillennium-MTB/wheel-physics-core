@@ -556,12 +556,43 @@ function calc(erd_mm, hub, spkDS, spkNDS, tDS_kgf, EIL, EIR, GJ, EA_rim, Ns, N, 
   const mu = GJ / EIL;                                  // I_warp = 0
   const luu = R*R*R*R / EIL * kuu0;                     // lup = lpp = 0 (b=0)
   let T_c_smeared = Infinity, n_c = 0;
+  const T_c_modes = [];                                 // per mode, n = 2..6
   for (let n = 2; n <= N; n++) {
     const n2 = n * n;
     const t_c = luu + (mu * n2 * (n2 - 1) * (n2 - 1)) / (1 + mu * n2);
     const Tcn = 2 * PI * EIL / (Ns * R * R) * t_c / (n2 - R * kT);
+    if (n <= 6) T_c_modes.push({ n, T_c_avg: Tcn });
     if (Tcn > 0 && Tcn < T_c_smeared) { T_c_smeared = Tcn; n_c = n; }
   }
+
+  // ── Wind-up (torsional) stiffness — theory.calc_tor_stiff, coupling=False
+  // Same in-plane 2×2 systems as K_rad, loaded tangentially: a tangential
+  // point load at θ=0 excites w·cos(nθ), so the rim-point tangential
+  // compliance is the w-w entry of each mode's inverse (Kvv/det). Mode n = 0
+  // is rigid rotation of the rim, resisted by the smeared spokes only.
+  // Ford's function returns R/w per newton [N/rad]; × R gives torque per
+  // radian of rim rotation relative to the hub [N·m/rad]. Ford thesis,
+  // stress analysis, "Loading case II: tangential point load".
+  let C_tor = 1 / (circ * kbar_ww);
+  for (let n = 1; n <= N; n++) {
+    const n2 = n * n;
+    const Kvv = EIR * PI / (R*R*R) * n2*n2 + EA_rim * PI / R
+              + PI * R * kbar_vv;
+    const Kww = EIR * PI / (R*R*R) * n2 + EA_rim * PI / R * n2
+              + PI * R * kbar_ww;
+    const Kvw = -(EIR * PI / (R*R*R) * n2*n + EA_rim * PI * n / R);
+    C_tor += Kvv / (Kvv * Kww - Kvw * Kvw);
+  }
+  const K_tor = R * R / C_tor;                          // [N·m/rad]
+
+  // ── Spokes inside the affected length of a point load (smeared spokes)
+  // Ford thesis (spoke_stiffness.tex), after Hetényi (1946):
+  //   n_SP = Ns/(π·R) · (4·EI/k)^(1/4)
+  // radial: EI_rad with k̄_vv; lateral: the combined bending/twist stiffness
+  // EI_lat·μ/(μ+1) with k̄_uu, as in Ford's calc_Pn_lat. Equals
+  // 2·calc_Pn_rad and 8·calc_Pn_lat.
+  const nSP_rad = Ns / (PI * R) * Math.pow(4 * EIR / kbar_vv, 0.25);
+  const nSP_lat = Ns / (PI * R) * Math.pow(4 * EIL * (mu / (mu + 1)) / kbar_uu, 0.25);
 
   // ── Strength: first-spoke-slack loads (NOT library outputs) ──────────────
   // The library has no strength output. Strength here is the point load at
@@ -610,6 +641,12 @@ function calc(erd_mm, hub, spkDS, spkNDS, tDS_kgf, EIL, EIR, GJ, EA_rim, Ns, N, 
     T_c_DS:   T_c_DS_eq / 9.81,            // equivalent DS tension [kgf]
     T_safety: T_safety * 100,              // current/critical [%]
     n_c,                                   // critical mode number (smeared)
+    // Per-mode smeared critical tension as equivalent DS tension [kgf]
+    // (Ford, Papadopoulos & Balogun 2016), n = 2..6.
+    T_c_modes: T_c_modes.map(m => ({ n: m.n, T_c_DS: m.T_c_avg * (T_DS / T_avg) / 9.81 })),
+    K_tor:    K_tor * PI / 180,            // [N·m/deg] wind-up stiffness, Ford calc_tor_stiff
+    nSP_rad,                               // spokes inside a radial hit's affected length
+    nSP_lat,                               // same, lateral
     T_c_smeared: T_c_smeared / 9.81,       // [kgf] smeared, linear approx.
     F_lat:    F_lat_N / 9.81,              // [kgf]
     F_taco:   Math.max(0, K_lat0 * R * (1 - T_safety)) / 9.81, // [kgf] rim-buckling load, F&B 2017 Eq. 2
