@@ -11,8 +11,8 @@
  * (https://github.com/dashdotrobot/bike-wheel-calc), implementing the Mode
  * Matrix method from:
  *
- *   Ford, M.T. (2018). A Theoretical Analysis of the Bicycle Wheel.
- *   PhD thesis, Northwestern University.
+ *   Ford, M.T. (2018). Reinventing the Wheel: Stress Analysis, Stability,
+ *   and Optimization of the Bicycle Wheel. PhD thesis, Northwestern University.
  *
  * bike-wheel-calc is MIT-licensed, © 2015 Matthew Ford — included as the
  * third-party/dashdotrobot/bike-wheel-calc git submodule in this repo,
@@ -48,6 +48,11 @@
  *                  F_ext call; firstSlackCombined ↔
  *                  first slack with both components in one F_ext call
  *                  (validation/spokes/)
+ *   K_tor  ↔ theory.calc_tor_stiff (× R): wind-up stiffness, N·m per degree
+ *   nSP_rad, nSP_lat ↔ 2·calc_Pn_rad, 8·calc_Pn_lat: spokes inside a point
+ *                  load's affected length (Ford thesis, after Hetényi 1946)
+ *   T_c_modes ↔ per-mode term of calc_buckling_tension(approx='linear'),
+ *                  n = 2..6 (validation/insights/)
  *
  * Model assumptions carried over from the library defaults:
  *   smeared (Smith–Pippard) spokes, no spoke offset (b = 0), no shear-center

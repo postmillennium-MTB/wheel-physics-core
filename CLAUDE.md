@@ -125,7 +125,7 @@ archive rather than duplicating the PDF.
 
 ## Working with `third-party/dashdotrobot/`
 
-All seven of Ford's other repos are archived there as git submodules (not
+All seven of Ford's wheel repos are archived there as git submodules (not
 copies), `bike-wheel-calc` included — for native reference (running his
 actual apps/notebooks/tests rather than everyone re-cloning them
 separately) in six cases, and as an actual build/validation dependency in
@@ -145,8 +145,31 @@ rather than assuming the archival relationship implies a license.
 (`third-party/dashdotrobot/bike-wheel-calc/bikewheelcalc/`) to
 floating-point precision — see `README.md`'s
 "Validation" section and `.github/workflows/validate.yml`. Any change to
-`engine.js` should be re-validated (`cd validation && python3 reference.py
-&& node run.mjs`) before committing, not just eyeballed.
+`engine.js` should be re-validated before committing, not just eyeballed.
+CI runs four checks, and all four should pass locally first:
+
+```bash
+cd validation && python3 reference.py && node run.mjs          # main outputs
+cd spokes && python3 reference_spokes.py && node run_spokes.mjs  # per-spoke + torque
+cd ../insights && python3 reference_insights.py && node run_insights.mjs
+cd ../.. && npm test                                              # build-link, sign conventions
+```
+
+A new engine output gets a reference value from Ford's own library (or,
+where the library has no such function, from the library's own building
+blocks, as `F_lat`/`F_rad` are) and a row in one of these checks, before a
+tool shows it.
+
+## Stiffness vs strength (wording)
+
+Always name stiffness and strength as two different things, in code
+comments, docs, tool text and chart labels. **Stiffness** (`K_lat`, `K_rad`,
+`K_tor`) is the load it takes to deflect the wheel by a given amount (N/mm, or N·m per degree). **Strength** (`F_lat`,
+`F_rad`, first spoke slack; `F_taco`, rim collapse) is the load at which
+something gives out. A stiffer wheel is not automatically a stronger one
+(in `wheel-comparison-widget2`'s README, thinning the NDS spokes from 2.0 to
+1.5 mm cuts `K_lat` by a third while `F_lat` barely moves), and using the words interchangeably is
+a common error in MTB marketing that these tools are meant to avoid.
 
 ## Color accessibility (colorblind-safe)
 

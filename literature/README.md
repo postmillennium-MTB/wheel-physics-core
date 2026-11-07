@@ -12,6 +12,7 @@ would blur that at a glance. See `papers/README.md` for his papers and
 | [`gavin-1996-spoke-patterns-and-spoke-fatigue.pdf`](./gavin-1996-spoke-patterns-and-spoke-fatigue.pdf) | Gavin, H.P. (1996). "Bicycle-Wheel Spoke Patterns and Spoke Fatigue." *ASCE Journal of Engineering Mechanics*, 122(8), pp. 736-742. |
 | [`minguez-vogwell-2008-analytical-model-radial-stiffness.pdf`](./minguez-vogwell-2008-analytical-model-radial-stiffness.pdf) | Mínguez, J.M., Vogwell, J. (2008). "An analytical model to study the radial stiffness and spoke load distribution in a modern racing bicycle wheel." *Proceedings of the Institution of Mechanical Engineers, Part C: Journal of Mechanical Engineering Science*, 222(4), pp. 563-576. [DOI: 10.1243/09544062JMES802](https://doi.org/10.1243/09544062jmes802). Self-archived via University of Bath's Opus repository. |
 | [`bike-tech-archive/bike-tech-v4n3-jun1985.pdf`](./bike-tech-archive/bike-tech-v4n3-jun1985.pdf) | Price, D., Akers, A. (1985). "Stiffness Characteristics of Bicycle Wheels." *Bike Tech*, 4(3), pp. 1-7, Rodale Press, Emmaus, PA. Widely cited (e.g. by Gavin 1996 above) but had no PDF anywhere online until this archive — see `bike-tech-archive/README.md` for the full periodical run it came from. |
+| [`bike-tech-archive/bike-tech-v3n4-aug1984.pdf`](./bike-tech-archive/bike-tech-v3n4-aug1984.pdf) | Allen, J.S. (1984). "A Musical Test for Correct Spoke Tension." *Bike Tech*, 3(4), Aug. 1984, Rodale Press. Inside the archived issue. |
 
 ## Copyright note on the Brandt book
 
@@ -76,6 +77,38 @@ calculated predictions in two contemporary wheelbuilding books — worth
 reading for anyone using this repo's rim/spoke betas who wants a second,
 independently-measured (not modeled) stiffness dataset from a different
 lacing-pattern angle than Gavin (1996) above.
+
+Its torsional measurements are the measured counterpart to the engine's
+wind-up stiffness, `K_tor` (Ford's `theory.calc_tor_stiff`), which the
+Lab's TORSION tab shows. They have not been compared with `K_tor`: the
+test wheels (36 spokes, 700c tubular rim, five lacing patterns) differ from
+the engine's fixed 3-cross MTB setup, so any comparison would have to
+rebuild those wheels in the engine first. If that is done, record the
+result here.
+
+## What's in the Allen article, briefly
+
+John S. Allen treats a plucked spoke as a string: its pitch depends on the
+stress in the spoke, not its gauge, so a pitch pipe can check tension. His
+Table 1 gives the measured pitch for each spoke length at one stress. The
+Lab's INSIGHTS tab uses that table for its spoke-pitch chart and keyboard.
+It is not part of `js/engine.js`; the engine supplies only the drive- and
+non-drive-side tensions the chart turns into notes.
+
+## Cited by the tools, no PDF here
+
+The Wheel Strength Lab's INSIGHTS tab and ISO notes cite these. They are
+not archived (books, a 1901 proceedings paper, a paid standard), so they
+are listed here to keep the attribution in one place. The citations below
+are copied from the Lab's INSIGHTS tab; they have not been re-checked
+against the originals.
+
+| Citation | Where it is used |
+|---|---|
+| Smith, B.A. (1901). "The Bicycle Wheel." *Report of the Meeting of the Australasian Association for the Advancement of Science*, 8, pp. 197–203. | Origin of the smeared-spoke idea Ford's stiffness formulas use; INSIGHTS "spokes sharing a hit" chart |
+| Pippard, A.J.S., Francis, W.E. (1931). "On a Theoretical and Experimental Investigation of the Stresses in a Radially Spoked Wire Wheel under Loads Applied to the Rim." *Philosophical Magazine*, 11(69), pp. 233–285. [DOI: 10.1080/14786443109461681](https://doi.org/10.1080/14786443109461681) | Same (the "Smith–Pippard" smeared-spoke approximation) |
+| Hetényi, M. (1946). *Beams on Elastic Foundation.* University of Michigan Press. | Deflection shape and affected length behind `nSP_rad` / `nSP_lat` |
+| ISO 4210-7:2023, *Cycles — Safety requirements for bicycles — Part 7: Wheels and rims test methods*, §4.2 static strength test. | Text notes under the lateral-strength charts in both tools. The ISO test checks for permanent bending; `F_lat` (first spoke slack) is an earlier, elastic limit, so the two are not the same threshold |
 
 ## Adding more
 
