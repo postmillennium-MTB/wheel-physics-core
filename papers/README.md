@@ -5,7 +5,7 @@ credit belongs to him and his co-authors — see each entry below.
 
 | File | Citation |
 |---|---|
-| [`ford-2018-a-theoretical-analysis-of-the-bicycle-wheel.pdf`](./ford-2018-a-theoretical-analysis-of-the-bicycle-wheel.pdf) | Ford, M.T. (2018). *A Theoretical Analysis of the Bicycle Wheel.* PhD thesis, Northwestern University. The primary source — every other paper here is a conference/journal excerpt of a chapter of this. Full LaTeX source, chapter-by-chapter, is also in `third-party/dashdotrobot/phd-thesis`. |
+| [`ford-2018-a-theoretical-analysis-of-the-bicycle-wheel.pdf`](./ford-2018-a-theoretical-analysis-of-the-bicycle-wheel.pdf) | Ford, M.T. (2018). *Reinventing the Wheel: Stress Analysis, Stability, and Optimization of the Bicycle Wheel.* PhD thesis, Northwestern University. The primary source — every other paper here is a conference/journal excerpt of a chapter of this. Full LaTeX source, chapter-by-chapter, is also in `third-party/dashdotrobot/phd-thesis`. |
 | [`ford-zhang-balogun-2016-buckling-and-collapse-abstract.pdf`](./ford-zhang-balogun-2016-buckling-and-collapse-abstract.pdf) | Ford, M., Zhang, L., Balogun, O. (2016). "Buckling and Collapse of the Bicycle Wheel." *XXIV ICTAM (International Congress of Theoretical and Applied Mechanics)*, Montreal. 2-page extended abstract. |
 | [`ford-papadopoulos-balogun-2016-buckling-of-the-bicycle-wheel.pdf`](./ford-papadopoulos-balogun-2016-buckling-of-the-bicycle-wheel.pdf) | Ford, M., Papadopoulos, J.M., Balogun, O. (2016). "Buckling of the Bicycle Wheel." *Proceedings, Bicycle and Motorcycle Dynamics 2016 Symposium*, Milwaukee, WI. Companion paper/code to `third-party/dashdotrobot/bmd2016`. |
 | [`ford-balogun-2017-radial-strength-and-collapse.pdf`](./ford-balogun-2017-radial-strength-and-collapse.pdf) | Ford, M., Balogun, O. (2017). "Analytical Model for the Radial Strength and Collapse of the Bicycle Wheel." *6th International Cycling Safety Conference*, Davis, CA. CC BY 4.0. |
@@ -21,6 +21,10 @@ number or an assumption in `js/engine.js` needs tracing back to first
 principles rather than to a paper's condensed version of it, this is the
 document to check first — it's the only one with the full derivation
 chain, not just the publishable excerpt.
+
+The file name keeps an earlier working title; the title on the PDF's own
+title page is *Reinventing the Wheel: Stress Analysis, Stability, and
+Optimization of the Bicycle Wheel*, which is the one to cite.
 
 ## What's in the buckling and radial-strength papers, briefly
 

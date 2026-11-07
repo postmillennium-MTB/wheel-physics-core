@@ -20,8 +20,8 @@ going forward.
 The engine implements the **Mode Matrix method** for bicycle wheel
 stress analysis, developed by **Matthew T. Ford**:
 
-> Ford, M.T. (2018). *A Theoretical Analysis of the Bicycle Wheel.*
-> PhD thesis, Northwestern University.
+> Ford, M.T. (2018). *Reinventing the Wheel: Stress Analysis, Stability,
+> and Optimization of the Bicycle Wheel.* PhD thesis, Northwestern University.
 
 Ford also published a reference implementation of his own method, as open
 source, at [github.com/dashdotrobot/bike-wheel-calc](https://github.com/dashdotrobot/bike-wheel-calc)
@@ -73,7 +73,9 @@ validation/reference.py   Computes ground-truth values via bike-wheel-calc
 validation/run.mjs        Runs engine.js on the same inputs, diffs, PASS/FAIL
 validation/hub_catalogue.json   The hub geometries used as the test matrix
 validation/validation_baseline_*.csv   Dated results of each validation run
-validation/spokes/         Per-spoke output check (spoke ring, load envelope)
+validation/spokes/         Per-spoke output check (spoke ring, load envelope, torque)
+validation/insights/       Check of the INSIGHTS-tab outputs (wind-up stiffness and others)
+validation/strength/       2026-10-24 study behind the switch to discrete-spoke strength
 .github/workflows/validate.yml   Runs the validation on every push, automatically
 ```
 
@@ -151,6 +153,18 @@ at that torque is zero to 4 × 10⁻¹⁵ of the DS tension. See
 outputs are unchanged (same numbers as `validation_baseline_2026-10-25.csv`;
 only hub names differ, from the 2026-11-07 rename).
 
+**Insight outputs**, added 2026-11-06 for the Lab's INSIGHTS and TORSION
+tabs, have their own check in `validation/insights/`: wind-up stiffness
+`K_tor` (torque per degree of rim rotation relative to the hub, Ford's
+`theory.calc_tor_stiff`), the number of spokes inside a point load's affected
+length (`nSP_rad`, `nSP_lat`), lateral stiffness across spoke tension
+(tension softening), and the smeared buckling tension of each buckling shape
+n = 2..6 (`T_c_modes`). `reference_insights.py` computes them with the
+library and `run_insights.mjs` compares. Result on 2026-11-06: 1,740
+comparisons, worst difference 2.1 × 10⁻¹¹%. `validation/insights/README.md`
+lists the source of each output and two gaps in the library that the
+reference script fills.
+
 `validation/strength/` records the 2026-10-24 study that led to computing
 strength with discrete spokes: the earlier smeared-spoke strength figures
 differed from the discrete ones by up to 49% close to buckling.
@@ -165,6 +179,11 @@ node run.mjs            # runs engine.js, diffs against reference.csv, writes a 
 cd spokes
 python3 reference_spokes.py   # per-spoke reference values (about 2 minutes)
 node run_spokes.mjs           # diffs engine.js's per-spoke output, writes a dated baseline
+cd ../insights
+python3 reference_insights.py # insight-output reference values
+node run_insights.mjs         # diffs engine.js's insight outputs
+cd ../..
+npm test                      # build-link format and per-spoke sign conventions
 ```
 
 ## Model settings
