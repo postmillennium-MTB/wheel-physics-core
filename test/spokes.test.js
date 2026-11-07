@@ -54,3 +54,26 @@ test('combined loads superpose', () => {
   const both = firstSlackCombined(r, { lat: 12, rad: 120 });
   assert.ok(both.scale < firstSlackCombined(r, { lat: 0, rad: 120 }).scale);
 });
+
+test('torque: tangential influence, sign mirror and first-slack torque', () => {
+  const { firstSlackTorque } = require('../js/engine.js');
+  const r = run({ spokes: true }), s = r.spokes;
+  assert.equal(s.dT.tan.length, 4);
+  assert.ok(s.R_m > 0.3 && s.R_m < 0.32);
+  // Pedal and brake torque change every spoke by equal and opposite amounts.
+  const up = spokeTensions(r, { torque: 300 }), down = spokeTensions(r, { torque: -300 });
+  up.forEach((v, i) => close(v - s.T[i], -(down[i] - s.T[i]), 1e-12));
+  // torque is shorthand for a tangential load torque / R.
+  const viaTan = spokeTensions(r, { tan: 300 / s.R_m / 9.81 });
+  up.forEach((v, i) => close(v, viaTan[i], 1e-12));
+  // At the first-slack torque exactly one spoke reaches zero, at that load point.
+  for (const sign of [1, -1]) for (const rad of [0, 60]) {
+    const f = firstSlackTorque(r, { sign, rad });
+    assert.ok(isFinite(f.torque) && f.torque > 0);
+    const T = spokeTensions(r, { torque: sign * f.torque, rad, pos: f.pos });
+    assert.ok(Math.abs(T[f.spoke]) < 1e-9);
+    assert.ok(Math.min(...T) > -1e-9);
+  }
+  // Rider weight lowers the torque the wheel can take before a spoke goes slack.
+  assert.ok(firstSlackTorque(r, { sign: 1, rad: 60 }).torque < firstSlackTorque(r, { sign: 1 }).torque);
+});

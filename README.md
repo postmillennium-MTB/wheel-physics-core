@@ -130,6 +130,27 @@ See `validation/spokes/spokes_baseline_2026-10-31.csv`. Adding the option
 left every existing output unchanged: `run.mjs` reproduces
 `validation_baseline_2026-10-25.csv` byte for byte.
 
+**Torque (pedal and brake)**, added 2026-11-07 for the Lab's TORSION tab:
+the per-spoke output also carries each spoke's tension change per newton
+of *tangential* load at the four load points (`dT.tan`, `f = [0, 0, 1, 0]`,
++w along increasing rim angle) and the rim radius `R_m`. With the hub held
+still, as in Ford's model, the ground's push on the tire is how pedal or
+brake torque reaches the spokes, so a torque M is applied as a tangential
+load M / R at the contact point. `spokeTensions` takes it as `torque`
+(N·m) or `tan` (kgf), and `firstSlackTorque(result, { sign, rad })` gives
+the torque at which the first spoke goes slack, optionally with a fixed
+radial load (rider weight) at the same point. In the rigid-hub model it
+makes no difference whether the torque enters at the cassette or at the
+rotor. `reference_spokes.py` checks it against the library with the radial
+and tangential components applied together in one `F_ext` call, both
+torque directions, with and without a 60 kgf radial load. Current result,
+120 builds: tangential tension changes agree to a relative 5 × 10⁻¹⁴ and
+first-slack torque to 8 × 10⁻¹³%; the library's own lowest spoke tension
+at that torque is zero to 4 × 10⁻¹⁵ of the DS tension. See
+`validation/spokes/spokes_baseline_2026-11-07.csv`. `run.mjs`'s main
+outputs are unchanged (same numbers as `validation_baseline_2026-10-25.csv`;
+only hub names differ, from the 2026-11-07 rename).
+
 `validation/strength/` records the 2026-10-24 study that led to computing
 strength with discrete spokes: the earlier smeared-spoke strength figures
 differed from the discrete ones by up to 49% close to buckling.

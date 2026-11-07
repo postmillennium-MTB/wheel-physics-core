@@ -19,6 +19,15 @@ For each build it writes:
     steps. This checks the engine's superposition and sign conventions
     against a load the library applies directly, not against its own
     per-direction vectors.
+  - tan: the same per-spoke tension change per newton of tangential load
+    (f = [0, 0, 1, 0], +w along increasing rim angle), the ground reaction
+    to pedal or brake torque with the hub held still;
+  - torque: first-slack torque [N·m] for both torque directions, with and
+    without a fixed 60 kgf radial load at the same point. Every evaluation
+    applies the radial and tangential components together in one F_ext
+    call (f = [0, W, M/R, 0]); the torque where the first spoke reaches zero
+    is found from two such calls per load point (tension is linear in M),
+    and a third call at that torque confirms the lowest tension is zero.
   - between: a study, not a pass/fail check. The engine (like ../reference.py)
     only loads the rim at spoke points. Here the load point is also swept
     across one lacing period (four spoke spacings) in 32 steps, and the
@@ -71,6 +80,28 @@ def main():
                 dT["lat"].append(dT_at(th, [1., 0., 0., 0.]).tolist())
                 dT["rad"].append(dT_at(th, [0., 1., 0., 0.]).tolist())
 
+            for th in load_th:
+                dT.setdefault("tan", []).append(dT_at(th, [0., 0., 1., 0.]).tolist())
+
+            R = wheel.rim.radius
+            torque = []
+            for sign in (1, -1):
+                for w_kgf in (0., 60.):
+                    best, best_j = np.inf, -1
+                    for j, th in enumerate(load_th):
+                        def T_at(m):
+                            return T0 + dT_at(th, [0., w_kgf * G, sign * m / R, 0.])
+                        t0, t1 = T_at(0.), T_at(1000.)
+                        slope = (t1 - t0) / 1000.
+                        neg = slope < 0
+                        if neg.any():
+                            m = np.min(t0[neg] / -slope[neg])
+                            if m < best:
+                                best, best_j = m, j
+                    resid = np.min(T0 + dT_at(load_th[best_j], [0., w_kgf * G, sign * best / R, 0.]))
+                    torque.append({"sign": sign, "rad_kgf": w_kgf, "torque_Nm": best,
+                                   "pos": best_j, "resid_min_T_N": resid})
+
             combined = []
             for phi in PHIS_DEG:
                 f = [np.cos(np.radians(phi)), np.sin(np.radians(phi)), 0., 0.]
@@ -92,7 +123,7 @@ def main():
                 "tDS_kgf": t_ds_kgf,
                 "th": [s.rim_pt[1] for s in wheel.spokes],
                 "T_kgf": (T0 / G).tolist(),
-                "loadTh": load_th, "dT": dT,
+                "loadTh": load_th, "dT": dT, "torque": torque,
                 "combined": combined, "between": between,
             })
     out = HERE / "reference_spokes.json"
