@@ -168,7 +168,7 @@ comments, docs, tool text and chart labels. **Stiffness** (`K_lat`, `K_rad`,
 `F_rad`, first spoke slack; `F_taco`, rim collapse) is the load at which
 something gives out. A stiffer wheel is not automatically a stronger one
 (in `wheel-comparison-widget2`'s README, thinning the NDS spokes from 2.0 to
-1.5 mm cuts `K_lat` by a third while `F_lat` barely moves), and using the words interchangeably is
+1.5 mm cuts `K_lat` by about a quarter while `F_lat` rises 8%), and using the words interchangeably is
 a common error in MTB marketing that these tools are meant to avoid.
 
 ## Color accessibility (colorblind-safe)

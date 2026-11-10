@@ -1,9 +1,9 @@
 {
  "rim_constants": {
-  "EIL": 50,
-  "EIR": 150,
-  "GJ": 22,
-  "EA_rim": 11500000,
+  "EIL": 260,
+  "EIR": 211,
+  "GJ": 75,
+  "EA_rim": 7200000,
   "modes": 24
  },
  "hubs": [

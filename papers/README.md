@@ -87,6 +87,13 @@ that table is used (as a reference/calibration point, not joined into the
 regression — all 7 are narrow road/hybrid rims, not the wide tubeless MTB
 rims in that catalogue).
 
+Ford has since published eleven rims measured this way in his
+[rim stiffness library](https://bicyclewheel.info/rim-stiffness/), adding
+the DT Swiss TK540, H Plus Son TB14, Mavic A119 and Stan's Grail MK3 to
+those seven. Since November 2026 the TK540 (EI_lat 260, EI_rad 211, GJ 75
+N·m², 550 g) is the rim both tools use for every build and the rim the
+validation checks run on (`validation/hub_catalogue.json`).
+
 ## Adding more papers
 
 This folder is Ford's own published work specifically — a paper by anyone

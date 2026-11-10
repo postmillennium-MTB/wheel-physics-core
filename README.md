@@ -101,12 +101,27 @@ more than floating-point noise:
   lateral/radial coupled) and `Spoke.calc_tension_change`.
 
 **Current result: all 120 hub-setup rows pass.** Every metric agrees to
-within 3.2 × 10⁻¹³%, except discrete `T_c` at 9 × 10⁻¹⁰%: the library function
+within 2.7 × 10⁻¹³%, except discrete `T_c` at 1.8 × 10⁻¹⁰% (and `F_taco`,
+which uses it, at 7 × 10⁻¹¹%): the library function
 solves that eigenproblem with scipy's general `eig()`, which scatters by
 that much from a symmetric solver (`eigh`) on the same matrices, and
 `engine.js` agrees with `eigh` to about 10⁻¹²%. `run.mjs` allows 10⁻⁷% for
-that one metric. See `validation/validation_baseline_2026-10-25.csv` for the
+that one metric. See `validation/validation_baseline_2026-11-10.csv` for the
 full row-by-row comparison.
+
+**The rim the checks use** (`rim_constants` in `hub_catalogue.json`) is the
+one both tools use for every build: the DT Swiss TK540 as measured by
+Matthew Ford with the acoustic method in Ford, Peng and Balogun (2018)
+(`papers/ford-peng-balogun-2018-acoustic-modal-testing.pdf`), from his
+[rim stiffness library](https://bicyclewheel.info/rim-stiffness/):
+EI_lat 260, EI_rad 211, GJ 75 N·m², and EA 7.2 MN from the rim's 550 g
+mass, as Ford's own wheel-app derives it. Ford measured ten other rims the
+same way and lists them in the same library (seven of them are also the rim
+presets in `third-party/dashdotrobot/wheel-app/wheel-app/helpers.py`). Until
+November 2026 the checks and both tools used EI_lat 50, EI_rad 150, GJ 22
+N·m² and EA 11.5 MN, a placeholder with no source that was softer laterally
+than any rim Ford measured; the dated baselines up to 2026-11-07 were run
+on it. Switching changed no engine code, and every check passed on both.
 
 This runs automatically on every push via GitHub Actions
 (`.github/workflows/validate.yml`) — not as a manual step someone has to
