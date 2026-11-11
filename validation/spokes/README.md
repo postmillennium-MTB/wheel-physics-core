@@ -9,7 +9,7 @@
 | Rim used | Measured DT Swiss TK540 (260 / 211 / 75 N·m², EA 7.2 MN) since 2026-11-10; the 2026-10-31 and 2026-11-07 baselines used the placeholder 50/150/22 |
 | Engine | `js/engine.js`, current `main` |
 | Ford's code | bike-wheel-calc 6fc380c |
-| Verdict | Pass on every row of `spokes_baseline_2026-11-10.csv` (worst per-spoke error about 1e-13 to 1e-12 relative). Header comment of `run_spokes.mjs` lists what is compared. |
+| Verdict | Pass: all 120 rows of `spokes_baseline_2026-11-10.csv`; worst differences 3.2e-14 (per-spoke tension, relative), 3.1e-13% (combined load) and 6.4e-13% (torque). Header comment of `run_spokes.mjs` lists what is compared. |
 | Re-run | `cd validation/spokes && python3 reference_spokes.py && node run_spokes.mjs` |
 
 ## Method
