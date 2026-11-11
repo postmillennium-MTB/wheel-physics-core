@@ -39,28 +39,29 @@ the same quantity.
 
 ## Results, DMR Zone 148
 
-| Output | Simulator (read off the page) | Ford's library, simulator settings, rim radius 306 mm | Engine, ERD 590 (rim radius 306 mm) | Engine, ERD 600 (rim radius 311 mm) |
+| Output | Simulator (read off the page) | Ford's library, simulator settings, rim radius 306 mm | Engine, ERD 590 (rim radius 306 mm) | Engine, ERD 605, the tools' 29" value (rim radius 313.5 mm) |
 |---|---|---|---|---|
 | Non-drive-side tension (kgf) | 56 | 55.6 | 55.6 | 55.6 |
-| Lateral stiffness (N/mm) | 150.3 | 150.30 | 150.29 | 142.4 |
-| Torsional stiffness (N/deg) | 3286 | 3285.6 | 3290.4 | 3199 |
-| Maximum average tension (kgf) | 335 | 334.79 | 334.79 | 323.8 |
-| Radial stiffness (N/mm) | 5645 | 5644.8 | 5774 | 5634 |
-| Lateral force to buckle spokes (kgf) | 34.8 | not computed by the library | 34.1 (first spoke slack) | 33.4 |
-| Radial force to buckle spokes (kgf) | 155.1 | not computed by the library | 165.5 (first spoke slack) | 164.2 |
+| Lateral stiffness (N/mm) | 150.3 | 150.30 | 150.29 | 138.7 |
+| Torsional stiffness (N/deg) | 3286 | 3285.6 | 3290.4 | 3155 |
+| Maximum average tension (kgf) | 335 | 334.79 | 334.79 | 318.5 |
+| Radial stiffness (N/mm) | 5645 | 5644.8 | 5774 | 5566 |
+| Lateral force to buckle spokes (kgf) | 34.8 | not computed by the library | 34.1 (first spoke slack) | 33.1 |
+| Radial force to buckle spokes (kgf) | 155.1 | not computed by the library | 165.5 (first spoke slack) | 163.5 |
 
 `ford_lib_R306.json` and `engine_erd590.json` hold the full output for the
 DMR Zone 148 and 157.
 
 ## Findings
 
-1. **The simulator's wheel has a rim radius of 306 mm, not 311 mm.** With
-   306 mm, Ford's library run with the API's settings reproduces every
-   stiffness and tension figure on the page to the printed digits. The
-   engine's convention for a 29" rim is ERD 600, which gives 311 mm
-   (ERD/2 + 11 mm, the bead-seat radius); entering ERD 590 gives 306 mm.
-   The 5 mm radius difference alone moves lateral stiffness 5.5% and
-   maximum average tension 3.5%. Why the simulator uses 306 mm for a 622
+1. **The simulator's wheel has a rim radius of 306 mm; the tools' 29" rim
+   has 313.5 mm.** With 306 mm, Ford's library run with the API's settings
+   reproduces every stiffness and tension figure on the page to the printed
+   digits. The tools use ERD 605 mm for 29" (a published rim spec, see the
+   main README), which gives 313.5 mm (ERD/2 + 11 mm); entering ERD 590
+   gives 306 mm. (When this check was run the tools used ERD 600, 311 mm.)
+   The 7.5 mm radius difference alone moves lateral stiffness about 8% and
+   maximum average tension about 5%. Why the simulator uses 306 mm for a 622
    rim is not stated on its instructions page; the API takes the radius as
    an input and its source was read, but the web client's was not.
 2. **At the same radius the engine matches the simulator** on lateral
