@@ -1,5 +1,17 @@
 # Insights validation
 
+## At a glance
+
+| | |
+|---|---|
+| Question | Do the four outputs behind the Lab's INSIGHTS tab (K_tor, nSP, K_lat vs tension, per-mode T_c) match Ford's code? |
+| Type | Formulas (engine vs Ford, same inputs on both sides) |
+| Rim used | Measured DT Swiss TK540 (260 / 211 / 75 N·m², EA 7.2 MN) since 2026-11-10; the 2026-11-06 run used the placeholder 50/150/22 |
+| Engine | `js/engine.js`, current `main` |
+| Ford's code | bike-wheel-calc 6fc380c |
+| Verdict | Pass: 1,740 comparisons, worst difference 2.1e-11% (2026-11-06 run) |
+| Re-run | `cd validation/insights && python3 reference_insights.py && node run_insights.mjs` |
+
 Checks four outputs that the Wheel Strength Lab's INSIGHTS tab shows. Each
 one comes from Matthew Ford's work (thesis, Northwestern 2018, and his
 bike-wheel-calc library) or from a classic result he cites.
