@@ -25,6 +25,7 @@ A **tool accuracy** check is a formulas check run on the tools' own builds.
 | [`29in-hub-check-2026-10-24/`](29in-hub-check-2026-10-24/) | 2026-10-24 | Tool accuracy | Pass: 900/900 builds |
 | [`strength/`](strength/) | 2026-10-24 | Strength model | Pass vs Ford; discrete vs smeared differences documented |
 | [`input-check-2026-11-10/`](input-check-2026-11-10/) | 2026-11-10 | Inputs | Rim was the only large error (fixed); ERD unsourced |
+| [`simulator-check-2026-11-11/`](simulator-check-2026-11-11/) | 2026-11-11 | Tool accuracy (vs Ford's live simulator) | Matches at the simulator's 306 mm rim radius; radial stiffness differs by a coupling setting; strength figures are different quantities |
 
 The two 2026-10-24 tool checks and `strength/` ran on the placeholder rim
 (50 / 150 / 22 N·m²); their pass/fail results hold, their absolute strength
