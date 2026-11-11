@@ -1,5 +1,17 @@
 # Tool accuracy check, 2026-10-24
 
+## At a glance
+
+| | |
+|---|---|
+| Question | Do the two live tools reproduce Ford's code on 380 builds, and do their pages show the right numbers? |
+| Type | Tool accuracy (formulas, same inputs on both sides) |
+| Rim used | 50 / 150 / 22 N·m², EA 11.5 MN: an unsourced placeholder, replaced 2026-11-10 (see `../input-check-2026-11-10/`) |
+| Engine | `js/engine.js` as imported by the Lab at 33ed149 |
+| Ford's code | bike-wheel-calc 6fc380c |
+| Verdict | Pass: worst difference from Ford 5.9e-10% (T_c). Page-level issues listed under "Not Ford's model". |
+| Re-run | See "Method" |
+
 A check of the two live wheel tools against Matthew Ford's own Python
 (`third-party/dashdotrobot/bike-wheel-calc`, MIT), the reference
 implementation of his Mode Matrix method (PhD thesis, Northwestern, 2018).

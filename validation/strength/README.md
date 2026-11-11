@@ -1,5 +1,17 @@
 # Strength check: first spoke slack vs Ford's bike-wheel-calc
 
+## At a glance
+
+| | |
+|---|---|
+| Question | Is first spoke slack (F_lat, F_rad), which the library has no function for, computed correctly, and how does Ford's discrete model differ from the smeared one the tools use? |
+| Type | Strength model (formulas, same inputs on both sides) |
+| Rim used | 50 / 150 / 22 N·m², EA 11.5 MN: an unsourced placeholder, replaced 2026-11-10 (see `../input-check-2026-11-10/`). Earlier text here called it "TK540", which was the widget's mislabel; it was not Ford's measured TK540. |
+| Engine | `js/engine.js` at 1e81384 |
+| Ford's code | bike-wheel-calc 6fc380c |
+| Verdict | Pass on the tool-vs-Ford comparison (1.8e-13%). The discrete-vs-smeared and regression results were computed on the placeholder rim; the measured-rim regression is in MTB-wheel-lab's regression README. |
+| Re-run | See "Re-running" |
+
 `validation/run.mjs` checks the engine's stiffness and buckling outputs
 against Matthew Ford's `bike-wheel-calc`. It does not check `F_lat` and
 `F_rad`, the first-spoke-slack strength figures, because the library has
@@ -48,7 +60,7 @@ There are two variants:
 The four setups are 29" (ERD 600) with 32 spokes at 100 kgf; 29" with 28
 spokes at 120 kgf (the Lab default); 26" (ERD 534) with 32 spokes at 120
 kgf; and 32" (ERD 667) with 32 spokes at 100 kgf. All use 2.0 mm spokes
-and TK540 rim constants.
+and the placeholder rim constants (see "At a glance").
 
 ### Ford's discrete model vs the smeared simplification
 
@@ -112,8 +124,8 @@ diameter becomes significant but small.
 
 ## Not covered
 
-- Rim stiffness is TK540 (scaled by `rim_stiffness_index` in the
-  regression rows); other measured rims were not run.
+- Rim stiffness is the placeholder 50/150/22 (scaled by `rim_stiffness_index` in the
+  regression rows). Ford's measured rims, TK540 included, were not run here.
 - All models here are linear up to first slack. Post-slack behaviour and
   permanent set are not modelled.
 - MTB-wheel-lab's committed `dataset.json` and `wheel_strength_dataset.csv`

@@ -1,5 +1,17 @@
 # Input check, 2026-11-10
 
+## At a glance
+
+| | |
+|---|---|
+| Question | Where does each input the tools feed the engine come from, and how much does each unsourced one change the results? |
+| Type | Inputs (what is fed in, not whether the formulas match) |
+| Rim used | Measured DT Swiss TK540 (260 / 211 / 75 N·m², EA 7.2 MN) |
+| Engine | `js/engine.js` at 5c6e9b9 |
+| Ford's code | bike-wheel-calc 6fc380c |
+| Verdict | Finding: the rim was the only input wrong by a large factor (now fixed). ERD has no recorded source (about 1% per 5 mm on F_lat). Hub dimensions were assumed correct for this check. |
+| Re-run | `cd validation/input-check-2026-11-10 && node sensitivity.mjs > sensitivity.csv` |
+
 Matthew Ford's Mode Matrix method is the math behind every number the tools
 show (Ford 2018, *Reinventing the Wheel*, PhD thesis, Northwestern University).
 
@@ -53,18 +65,18 @@ Selected rows from `sensitivity.csv` (change in F_lat, K_lat, F_rad):
 1. The rim was the only input that was wrong by a large factor. Everything
    else above is either sourced, derived from Ford's own conventions, or a
    user-set default.
-2. Flange offsets are the input that matters most and that lacks a source for
-   18 of 30 hubs. A 1 mm error moves F_lat 3–4%. A 148-vs-157 gap of 19–25%
-   is much larger than that, but hub-to-hub rankings among near neighbours
-   could change. Each of those 18 hubs needs its manufacturer document, or a
-   caliper measurement, recorded.
+2. Flange offsets are the input that matters most, and 18 of 30 hubs have
+   no source recorded (taken as correct for this check). A 1 mm error moves
+   F_lat 3–4%, much less than the 19–25% gap between 148 and 157, but
+   enough to reorder hubs that are close together.
 3. ERD and flange diameter are minor (about 1% and under 0.1% on F_lat).
 4. Spoke diameter changes stiffness (K_lat) far more than strength (F_lat),
    which is the stiffness-versus-strength point the tools exist to make.
 
 ## Not checked
 
-The manufacturer documents themselves were not re-read in this check; it
-records which hubs have one. No hub dimension was measured.
+Hub dimensions were taken as correct at Jon's direction (2026-11-10); the
+manufacturer documents were not re-read and no hub was measured. The list
+of 18 hubs without a recorded source is kept for reference.
 
 Re-run: `node sensitivity.mjs > sensitivity.csv`

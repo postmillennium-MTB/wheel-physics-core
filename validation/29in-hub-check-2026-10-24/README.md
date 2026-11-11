@@ -1,5 +1,17 @@
 # 29" per-hub accuracy check, 2026-10-24
 
+## At a glance
+
+| | |
+|---|---|
+| Question | Does each of the 30 hubs, in both tools, match Ford's code at 29" across spoke counts and tensions? |
+| Type | Tool accuracy (formulas, same inputs on both sides) |
+| Rim used | 50 / 150 / 22 N·m², EA 11.5 MN: an unsourced placeholder, replaced 2026-11-10 (see `../input-check-2026-11-10/`) |
+| Engine | `js/engine.js` via Lab `main` 816d702 and widget2 `main` 48262b8 |
+| Ford's code | bike-wheel-calc 6fc380c |
+| Verdict | Pass: 900/900 builds, worst difference 8.9e-10% (T_c). Absolute strengths in the tables below are for the placeholder rim. |
+| Re-run | See "Method" |
+
 Checks the strength calculations of both live wheel tools, hub by hub, at
 29" against Matthew Ford's own Python (`third-party/dashdotrobot/bike-wheel-calc`,
 MIT), the reference implementation of his Mode Matrix method (PhD thesis,
