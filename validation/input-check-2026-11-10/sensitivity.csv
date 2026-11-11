@@ -1,0 +1,27 @@
+input,change,hub,dF_lat_pct,dK_lat_pct,dF_rad_pct
+"ERD (mm)","+5","CK148",-1.1,-2.6,-0.3
+"ERD (mm)","+5","CK157",-1.0,-2.6,-0.3
+"ERD (mm)","-5","CK148",1.1,2.7,0.3
+"ERD (mm)","-5","CK157",1.0,2.7,0.3
+"Flange offset DS and NDS (mm)","+1 each","CK148",3.9,5.4,1.2
+"Flange offset DS and NDS (mm)","+1 each","CK157",3.1,4.8,0.9
+"Flange offset DS and NDS (mm)","-1 each","CK148",-3.9,-5.3,-1.3
+"Flange offset DS and NDS (mm)","-1 each","CK157",-3.2,-4.7,-0.9
+"Flange (pull-circle) diameter (mm)","+3 both","CK148",0.0,0.2,-0.1
+"Flange (pull-circle) diameter (mm)","+3 both","CK157",0.0,0.2,-0.1
+"Flange (pull-circle) diameter (mm)","-3 both","CK148",-0.0,-0.2,0.1
+"Flange (pull-circle) diameter (mm)","-3 both","CK157",-0.0,-0.2,0.0
+"Spoke diameter (mm)","1.8 both","CK148",2.2,-16.9,5.1
+"Spoke diameter (mm)","1.8 both","CK157",2.2,-16.8,5.0
+"Spoke diameter (mm)","2.0 DS / 1.8 NDS","CK148",2.4,-11.6,7.7
+"Spoke diameter (mm)","2.0 DS / 1.8 NDS","CK157",2.5,-11.0,7.5
+"Spoke count","32 (from 28)","CK148",10.9,14.7,7.8
+"Spoke count","32 (from 28)","CK157",11.1,14.8,7.8
+"Rim EI_lat (N m^2)","130 (min measured)","CK148",-14.7,-14.6,2.6
+"Rim EI_lat (N m^2)","130 (min measured)","CK157",-14.0,-14.2,2.3
+"Rim EI_lat (N m^2)","260 (TK540)","CK148",0.0,0.0,0.0
+"Rim EI_lat (N m^2)","260 (TK540)","CK157",0.0,0.0,0.0
+"Rim EA (MN)","5 (low end)","CK148",0.2,0.0,-0.6
+"Rim EA (MN)","5 (low end)","CK157",0.2,0.0,-0.6
+"Rim EA (MN)","8 (high end)","CK148",-0.1,0.0,0.2
+"Rim EA (MN)","8 (high end)","CK157",-0.0,0.0,0.2
