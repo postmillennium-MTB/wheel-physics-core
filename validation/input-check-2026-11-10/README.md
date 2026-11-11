@@ -9,7 +9,7 @@
 | Rim used | Measured DT Swiss TK540 (260 / 211 / 75 N·m², EA 7.2 MN) |
 | Engine | `js/engine.js` at 5c6e9b9 |
 | Ford's code | bike-wheel-calc 6fc380c |
-| Verdict | Finding: the rim was the only input wrong by a large factor (now fixed). ERD has no recorded source (about 1% per 5 mm on F_lat). Hub dimensions were assumed correct for this check. |
+| Verdict | Finding: the rim was the only input wrong by a large factor (now fixed). ERD had no recorded source until 2026-11-11 (now from manufacturer specs; about 1% per 5 mm on F_lat). Hub dimensions were assumed correct for this check. |
 | Re-run | `cd validation/input-check-2026-11-10 && node sensitivity.mjs > sensitivity.csv` |
 
 Matthew Ford's Mode Matrix method is the math behind every number the tools
@@ -36,7 +36,7 @@ core #24, Lab #35 and widget2 #21. This folder traces every other input.
 | Mode count | 24 | Sourced: Ford's `SIM_OPTS_NMODES`. |
 | Spoke diameter | 2.0 mm DS and NDS | A default, not a measurement. Real builds use 1.8–2.0 mm; effect in `sensitivity.csv`. |
 | Spoke tension | 120 kgf DS (slider) | A user setting, not a fact about a wheel. |
-| ERD by wheel size | 534 / 559 / 600 / 667 mm | **No source recorded.** Typical values for double-wall MTB rims; real ERD varies by rim model. ±5 mm moves F_lat about 1%. |
+| ERD by wheel size | 538 / 567 / 605 / 649 mm (26" / 27.5" / 29" / 32") | Sourced 2026-11-11 from manufacturer specs (DT Swiss FR 560 26", Tenet Coven AL 27.5" and 29", Reserve 30\|XC 32"); table with links in the main README. Until then 534 / 559 / 600 / 667 mm with **no source recorded**. One value per size, not per rim; real rims vary by a few mm (Reserve 30\|XC 29" is 599 vs Tenet's 605). ±5 mm moves F_lat about 1%. |
 | Hub flange offsets (nds, ds) | per hub | Manufacturer document for 12 of 30 hubs (KOM, Hope, DT Swiss, DMR, OneUp, e*thirteen). **No source recorded for 18**: Onyx (3), Spank (2), CK (2), Project 321 (2), I9 (5), Hadley (2), Erase (2). |
 | Hub flange diameters (pds, pnds) | per hub | Same coverage as offsets. |
 | Lacing | 3-cross | Ford's `lace_cross`; matches the validation setup. |

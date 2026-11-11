@@ -52,7 +52,7 @@ from bikewheelcalc.theory import calc_lat_stiff, calc_tor_stiff, calc_buckling_t
 from reference import build_wheel  # noqa: E402
 
 N_MODES = 24
-SETUPS = [(600.0, 28, 120.0), (600.0, 32, 100.0)]
+SETUPS = [(605.0, 28, 120.0), (605.0, 32, 100.0)]
 SWEEP = list(range(0, 201, 10))  # DS tension, kgf
 MODES = [2, 3, 4, 5, 6]
 

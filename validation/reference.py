@@ -35,10 +35,11 @@ Writes reference.csv, one row per hub per build setup. run.mjs then runs js/engi
 same inputs and diffs the two.
 
 Build setups (2.0mm straight-gauge spokes throughout):
-  29" (ERD 600), 32 spokes, 100 kgf DS -- wheel-comparison-widget2's original baseline
-  29" (ERD 600), 28 spokes, 120 kgf DS -- MTB-wheel-lab's default build
-  26" (ERD 534), 32 spokes, 120 kgf DS
-  32" (ERD 667), 32 spokes, 100 kgf DS
+  29" (ERD 605), 32 spokes, 100 kgf DS -- wheel-comparison-widget2's original baseline
+  29" (ERD 605), 28 spokes, 120 kgf DS -- MTB-wheel-lab's default build
+  26" (ERD 538), 32 spokes, 120 kgf DS
+  32" (ERD 649), 32 spokes, 100 kgf DS
+ERD by wheel size, with sources, is in README.md ("Effective rim diameter").
 """
 import csv
 import json
@@ -54,10 +55,10 @@ from bikewheelcalc.theory import (calc_lat_stiff, calc_rad_stiff, calc_buckling_
 from bikewheelcalc.mode_matrix import ModeMatrix
 
 SETUPS = [  # (ERD mm, spoke count, DS tension kgf)
-    (600.0, 32, 100.0),
-    (600.0, 28, 120.0),
-    (534.0, 32, 120.0),
-    (667.0, 32, 100.0),
+    (605.0, 32, 100.0),
+    (605.0, 28, 120.0),
+    (538.0, 32, 120.0),
+    (649.0, 32, 100.0),
 ]
 SPOKE_DIA_MM = 2.0
 SPOKE_E = 210e9
