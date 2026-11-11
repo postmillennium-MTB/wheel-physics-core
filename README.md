@@ -101,12 +101,12 @@ more than floating-point noise:
   lateral/radial coupled) and `Spoke.calc_tension_change`.
 
 **Current result: all 120 hub-setup rows pass.** Every metric agrees to
-within 2.7 × 10⁻¹³%, except discrete `T_c` at 1.8 × 10⁻¹⁰% (and `F_taco`,
-which uses it, at 7 × 10⁻¹¹%): the library function
+within 3.2 × 10⁻¹³%, except discrete `T_c` at 1.2 × 10⁻⁹% (and `F_taco`,
+which uses it, at 5.8 × 10⁻¹⁰%): the library function
 solves that eigenproblem with scipy's general `eig()`, which scatters by
 that much from a symmetric solver (`eigh`) on the same matrices, and
 `engine.js` agrees with `eigh` to about 10⁻¹²%. `run.mjs` allows 10⁻⁷% for
-that one metric. See `validation/validation_baseline_2026-11-10.csv` for the
+that one metric. See `validation/validation_baseline_2026-11-11.csv` for the
 full row-by-row comparison.
 
 **The rim the checks use** (`rim_constants` in `hub_catalogue.json`) is the
@@ -122,6 +122,22 @@ November 2026 the checks and both tools used EI_lat 50, EI_rad 150, GJ 22
 N·m² and EA 11.5 MN, a placeholder with no source that was softer laterally
 than any rim Ford measured; the dated baselines up to 2026-11-07 were run
 on it. Switching changed no engine code, and every check passed on both.
+
+**Effective rim diameter (ERD) by wheel size.** The tools and the checks use
+one ERD per wheel size, each from a published manufacturer spec. They are
+single typical values, not the TK540's own ERD, and real rims vary by a few
+millimetres (see the second 29" figure below).
+
+| Wheel size | ERD (mm) | Source |
+|---|---|---|
+| 26" | 538 | DT Swiss FR 560 26" ([spec page](https://www.dtswiss.com/en/components/rims-mtb/free-ride/fr-560), "Reference diameter ERD 538 mm") |
+| 27.5" | 567 | Tenet Coven AL rim ([product page](https://www.ridetenet.com/products/coven-al-rim), "ERD 567 mm (27.5) / 605 mm (29)") |
+| 29" | 605 | Tenet Coven AL rim, same page. Reserve 30\|XC lists 599 mm for 29" ([product page](https://reservewheels.com/products/30-xc)); 6 mm moves F_lat about 1.3% and lateral stiffness about 3% (`validation/input-check-2026-11-10/`) |
+| 32" | 649 | Reserve 30\|XC 32" ([product page](https://reservewheels.com/products/30-xc), "32\" ERD 649mm") |
+
+The rim radius the engine uses is ERD/2 + 11 mm (below). Until 2026-11-11 the
+values were 534 / 559 / 600 / 667 mm, with no source recorded; the dated
+baselines up to 2026-11-10 were run on them.
 
 This runs automatically on every push via GitHub Actions
 (`.github/workflows/validate.yml`) — not as a manual step someone has to
@@ -175,8 +191,8 @@ tabs, have their own check in `validation/insights/`: wind-up stiffness
 length (`nSP_rad`, `nSP_lat`), lateral stiffness across spoke tension
 (tension softening), and the smeared buckling tension of each buckling shape
 n = 2..6 (`T_c_modes`). `reference_insights.py` computes them with the
-library and `run_insights.mjs` compares. Result on 2026-11-06: 1,740
-comparisons, worst difference 2.1 × 10⁻¹¹%. `validation/insights/README.md`
+library and `run_insights.mjs` compares. Result on 2026-11-11: 1,740
+comparisons, worst difference 2.1 × 10⁻¹³%. `validation/insights/README.md`
 lists the source of each output and two gaps in the library that the
 reference script fills.
 

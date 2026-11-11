@@ -18,13 +18,13 @@ A **tool accuracy** check is a formulas check run on the tools' own builds.
 
 | Check | Date | Type | Verdict |
 |---|---|---|---|
-| Core check: `reference.py` + `run.mjs`, baselines `validation_baseline_*.csv` (see the main README's Validation section; also `npm test`) | per baseline, latest 2026-11-10 | Formulas | Pass: 120 hub-setup rows, worst 1.8e-10% (discrete T_c) |
-| [`spokes/`](spokes/) | 2026-11-10 baseline | Formulas | Pass |
-| [`insights/`](insights/) | 2026-11-06 | Formulas | Pass: 1,740 comparisons, worst 2.1e-11% |
+| Core check: `reference.py` + `run.mjs`, baselines `validation_baseline_*.csv` (see the main README's Validation section; also `npm test`) | per baseline, latest 2026-11-11 | Formulas | Pass: 120 hub-setup rows, worst 1.2e-9% (discrete T_c) |
+| [`spokes/`](spokes/) | 2026-11-11 baseline | Formulas | Pass |
+| [`insights/`](insights/) | 2026-11-11 | Formulas | Pass: 1,740 comparisons, worst 2.1e-13% |
 | [`tool-check-2026-10-24/`](tool-check-2026-10-24/) | 2026-10-24 | Tool accuracy | Pass on 380 builds; page issues listed |
 | [`29in-hub-check-2026-10-24/`](29in-hub-check-2026-10-24/) | 2026-10-24 | Tool accuracy | Pass: 900/900 builds |
 | [`strength/`](strength/) | 2026-10-24 | Strength model | Pass vs Ford; discrete vs smeared differences documented |
-| [`input-check-2026-11-10/`](input-check-2026-11-10/) | 2026-11-10 | Inputs | Rim was the only large error (fixed); ERD unsourced |
+| [`input-check-2026-11-10/`](input-check-2026-11-10/) | 2026-11-10 | Inputs | Rim was the only large error (fixed); ERD unsourced until 2026-11-11 (now sourced, see main README) |
 | [`simulator-check-2026-11-11/`](simulator-check-2026-11-11/) | 2026-11-11 | Tool accuracy (vs Ford's live simulator) | Matches at the simulator's 306 mm rim radius; radial stiffness differs by a coupling setting; strength figures are different quantities |
 
 The two 2026-10-24 tool checks and `strength/` ran on the placeholder rim
