@@ -60,7 +60,7 @@ jobs:
         working-directory: validation/insights
         run: node run_insights.mjs
 
-      - name: Unit tests (build-link format, per-spoke conventions)
+      - name: Unit tests (build-link format, share text, per-spoke conventions)
         run: node --test test/*.test.js
 
       - name: Upload validation results
