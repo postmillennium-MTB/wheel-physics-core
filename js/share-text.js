@@ -40,14 +40,18 @@ var WheelShareText = (function () {
     return { d: d, text: (d >= 1 ? Math.round(d) : Math.round(d * 10) / 10) + '%' };
   }
 
+  // "B is 20% stronger than A (45.8 vs 38.3 kgf)": the values follow the
+  // sentence's order, so each number sits next to the hub it belongs to.
   function compare(a, b, key, digits, unit, adjective) {
     var va = a[key], vb = b[key];
-    var pair = ' (' + a.label + ' ' + va.toFixed(digits) + ' ' + unit + ', ' +
-      b.label + ' ' + vb.toFixed(digits) + ' ' + unit + ')';
     var p = pct(va, vb);
-    if (p.d < EQUAL_PCT) return 'about the same' + pair;
-    var win = va > vb ? a : b, lose = va > vb ? b : a;
-    return win.label + ' is ' + p.text + ' ' + adjective + ' than ' + lose.label + pair;
+    if (p.d < EQUAL_PCT) {
+      return a.label + ' and ' + b.label + ' are about the same (' +
+        va.toFixed(digits) + ' vs ' + vb.toFixed(digits) + ' ' + unit + ')';
+    }
+    var aWins = va > vb, win = aWins ? a : b, lose = aWins ? b : a;
+    return win.label + ' is ' + p.text + ' ' + adjective + ' than ' + lose.label + ' (' +
+      (aWins ? va : vb).toFixed(digits) + ' vs ' + (aWins ? vb : va).toFixed(digits) + ' ' + unit + ')';
   }
 
   function buildLine(a, b, spokes) {
