@@ -17,6 +17,14 @@
  * A shared link always wins: a tool applies the saved wheel only when the
  * address it was opened with carries no build of its own (linkHasBuild).
  *
+ * Both tools must read the same storage, which means the same web origin.
+ * The Lab runs on www.postmillenniumrenaissance.com itself; the widget runs
+ * in an iframe served from postmillennium-mtb.github.io, whose own storage
+ * the Lab cannot see. So when framed by the PMR page, the widget asks that
+ * page to read and write the record for it (postMessage), passing the
+ * stored text made by serialize() and reading it back with parse(). The
+ * page only stores the text; both tools validate it with clean() on read.
+ *
  * Same packaging rule as engine.js: no import/export keyword, so it works as
  * a plain <script>, under Node's require(), and through a bundler.
  */
@@ -50,20 +58,30 @@ var WheelMyWheel = (function () {
     return { hub: hub, std: std, wheel: wheel, tension: tension, spokes: spokes };
   }
 
-  function load(storage) {
-    var s = store(storage);
-    if (!s) return null;
+  // Stored text <-> build. parse() returns null for anything not a valid,
+  // current-version record, so a damaged or foreign value reads as nothing.
+  function serialize(b) {
+    var c = clean(b);
+    return c ? JSON.stringify({ v: VERSION, build: c }) : null;
+  }
+  function parse(text) {
     try {
-      var rec = JSON.parse(s.getItem(KEY));
+      var rec = JSON.parse(text);
       return rec && rec.v === VERSION ? clean(rec.build) : null;
     } catch (e) { return null; }
   }
 
+  function load(storage) {
+    var s = store(storage);
+    if (!s) return null;
+    try { return parse(s.getItem(KEY)); } catch (e) { return null; }
+  }
+
   // Returns true when saved. b = { hub, std, wheel, tension, spokes }.
   function save(b, storage) {
-    var c = clean(b), s = store(storage);
-    if (!c || !s) return false;
-    try { s.setItem(KEY, JSON.stringify({ v: VERSION, build: c })); return true; } catch (e) { return false; }
+    var text = serialize(b), s = store(storage);
+    if (!text || !s) return false;
+    try { s.setItem(KEY, text); return true; } catch (e) { return false; }
   }
 
   function clear(storage) {
@@ -91,6 +109,7 @@ var WheelMyWheel = (function () {
 
   return {
     KEY: KEY, load: load, save: save, clear: clear, clean: clean,
+    serialize: serialize, parse: parse,
     linkHasBuild: linkHasBuild, describe: describe,
   };
 })();

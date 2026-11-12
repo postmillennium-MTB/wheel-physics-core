@@ -54,3 +54,10 @@ test('a hash with a build counts as a shared link; view-only hashes do not', () 
 test('describe names the build', () => {
   assert.equal(M.describe(B, 'CK Centerlock 148x12'), 'CK Centerlock 148x12 · 29" · 32 spokes · 120 kgf');
 });
+
+test('serialize and parse round-trip; foreign text parses as nothing', () => {
+  assert.deepEqual(M.parse(M.serialize(B)), B);
+  assert.equal(M.serialize({ ...B, hub: 'x' }), null);
+  assert.equal(M.parse('"hello"'), null);
+  assert.equal(M.parse(null), null);
+});

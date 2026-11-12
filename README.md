@@ -318,6 +318,12 @@ always opens as sent, and each tool shows a visible way to clear it. Custom
 hub geometry is deliberately not supported: only hubs in the catalogue can
 be saved. Blocked or missing storage reads as "nothing saved".
 
+The widget runs in an iframe from `postmillennium-mtb.github.io`, a
+different origin from the Lab, so its own `localStorage` is not the Lab's.
+When framed by the PMR page it asks that page to store the record
+(`postMessage`); the page keeps only the text from `serialize()`, and both
+tools check it with `parse()` when they read it.
+
 ## License
 
 `third-party/dashdotrobot/bike-wheel-calc/` is Matthew Ford's
