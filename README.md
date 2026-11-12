@@ -67,7 +67,9 @@ there purely for reference and aren't consumed by anything.
 third-party/dashdotrobot/bike-wheel-calc/   Ford's library, submoduled, MIT-licensed
 js/engine.js              THE canonical JS engine both tools should consume
 js/build-link.js          Link format the two tools use to hand a build to each other
+js/share-text.js          "Copy result" wording both tools paste (not physics)
 test/build-link.test.js   Tests for that link format (npm test)
+test/share-text.test.js   Tests for the "Copy result" wording (npm test)
 test/spokes.test.js       Sign conventions of the per-spoke output (npm test)
 validation/reference.py   Computes ground-truth values via bike-wheel-calc
 validation/run.mjs        Runs engine.js on the same inputs, diffs, PASS/FAIL
@@ -290,6 +292,17 @@ range: the Lab offers 80-125 kgf, the widget 95-125 kgf.
 The Lab imports it at build time like `engine.js`; the widget keeps a
 pasted copy, same as its engine copy. `npm test` (also run in CI) checks
 the format.
+
+## "Copy result" text
+
+`js/share-text.js` turns a comparison the tool has already computed into a
+few plain-text lines for places that show no link preview, such as a
+Pinkbike comment: lateral strength (`F_lat`, kgf) and lateral stiffness
+(`K_lat`, N/mm) on separate labelled lines, the build, a credit to Ford's
+Mode Matrix method, and the build link. It adds no numbers of its own. A
+build at or past its buckling tension gets no strength percentage. Both
+tools use this one file (the Lab imports it, the widget pastes it, like
+`build-link.js`) so a result reads the same whichever tool it came from.
 
 ## License
 
