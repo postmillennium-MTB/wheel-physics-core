@@ -46,3 +46,8 @@ test('no url, no link line', () => {
   const t = S.resultText({ a: side('A', 40, 100), b: side('B', 45, 100) });
   assert.doesNotMatch(t, /https?:/);
 });
+
+test('an optional note joins the build line', () => {
+  const t = S.resultText({ a: side('A', 40, 100), b: side('B', 45, 100), spokes: '28', note: 'rim offset 3 mm' });
+  assert.match(t, /Build: 29", 28 spokes, 120 kgf drive-side spoke tension, rim offset 3 mm\./);
+});

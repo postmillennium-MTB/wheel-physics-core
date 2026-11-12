@@ -16,6 +16,7 @@
  *   a: { label: '148x12 (Onyx MFU)', F_lat: 38.3, K_lat: 95.1, wheel: '29', tension: 120 },
  *   b: { label: '157x12 (Onyx MFU)', F_lat: 45.8, K_lat: 99.4, wheel: '29', tension: 120 },
  *   spokes: '28',
+ *   note: 'rim offset 3 mm',     // optional, added to the build line
  *   url: 'https://www.postmillenniumrenaissance.com/wheel-lab/#compare&...',
  * })
  *
@@ -54,15 +55,15 @@ var WheelShareText = (function () {
       (aWins ? va : vb).toFixed(digits) + ' vs ' + (aWins ? vb : va).toFixed(digits) + ' ' + unit + ')';
   }
 
-  function buildLine(a, b, spokes) {
+  function buildLine(a, b, spokes, note) {
     var sp = spokes ? spokes + ' spokes' : null;
     if (a.wheel === b.wheel && a.tension === b.tension) {
-      return 'Build: ' + [a.wheel + '"', sp, a.tension + ' kgf drive-side spoke tension']
+      return 'Build: ' + [a.wheel + '"', sp, a.tension + ' kgf drive-side spoke tension', note]
         .filter(Boolean).join(', ') + '.';
     }
     var side = function (s) { return s.label + ' ' + s.wheel + '" at ' + s.tension + ' kgf'; };
     return 'Build: ' + side(a) + '; ' + side(b) + (sp ? '; ' + sp : '') +
-      ' (drive-side spoke tension).';
+      (note ? '; ' + note : '') + ' (drive-side spoke tension).';
   }
 
   function resultText(r) {
@@ -80,7 +81,7 @@ var WheelShareText = (function () {
       lines.push('Lateral STIFFNESS (sideways load per mm of flex, a different property): ' +
         compare(a, b, 'K_lat', 0, 'N/mm', 'stiffer') + '.');
     }
-    lines.push(buildLine(a, b, r.spokes));
+    lines.push(buildLine(a, b, r.spokes, r.note));
     lines.push("Model: Matthew Ford's Mode Matrix method (Ford 2018, PhD thesis, Northwestern).");
     if (r.url) lines.push(r.url);
     return lines.join('\n');
