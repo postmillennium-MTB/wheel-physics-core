@@ -68,8 +68,10 @@ third-party/dashdotrobot/bike-wheel-calc/   Ford's library, submoduled, MIT-lice
 js/engine.js              THE canonical JS engine both tools should consume
 js/build-link.js          Link format the two tools use to hand a build to each other
 js/share-text.js          "Copy result" wording both tools paste (not physics)
+js/my-wheel.js            "My wheel": one build remembered in the visitor's browser (not physics)
 test/build-link.test.js   Tests for that link format (npm test)
 test/share-text.test.js   Tests for the "Copy result" wording (npm test)
+test/my-wheel.test.js     Tests for the "My wheel" record (npm test)
 test/spokes.test.js       Sign conventions of the per-spoke output (npm test)
 validation/reference.py   Computes ground-truth values via bike-wheel-calc
 validation/run.mjs        Runs engine.js on the same inputs, diffs, PASS/FAIL
@@ -303,6 +305,24 @@ Mode Matrix method, and the build link. It adds no numbers of its own. A
 build at or past its buckling tension gets no strength percentage. Both
 tools use this one file (the Lab imports it, the widget pastes it, like
 `build-link.js`) so a result reads the same whichever tool it came from.
+
+## "My wheel"
+
+`js/my-wheel.js` keeps one build (a listed hub from the shared catalogue,
+its axle standard, wheel size, drive-side tension and spoke count) in the
+visitor's own browser (`localStorage`, key `pmr-my-wheel`), so a wheel
+saved in either tool opens in both. Nothing is sent anywhere: no account,
+server or cookie. Each tool applies the saved wheel only when the page was
+opened without a build in its address (`linkHasBuild`), so a shared link
+always opens as sent, and each tool shows a visible way to clear it. Custom
+hub geometry is deliberately not supported: only hubs in the catalogue can
+be saved. Blocked or missing storage reads as "nothing saved".
+
+The widget runs in an iframe from `postmillennium-mtb.github.io`, a
+different origin from the Lab, so its own `localStorage` is not the Lab's.
+When framed by the PMR page it asks that page to store the record
+(`postMessage`); the page keeps only the text from `serialize()`, and both
+tools check it with `parse()` when they read it.
 
 ## License
 
